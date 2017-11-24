@@ -1,0 +1,38 @@
+{
+    "name": "godot-snake-ai-trainer",
+    "version": "1.0.0",
+    "description": "Godot Snake AI Trainer",
+    "main": "src/client/index.js",
+    "author": "ilyaev@gmail.com",
+    "license": "MIT",
+    "scripts": {
+        "start:hot": "webpack -d && cp src/index.html dist/index.html && webpack-dev-server --content-base src/ --inline --hot",
+        "startclient": "webpack -d && cp src/index.html dist/index.html && webpack-dev-server --content-base src/",
+        "start": "nodemon src/server/server.js",
+        "build": "webpack -p && cp src/index.html dist/index.html"
+    },
+    "dependencies": {
+        "express": "^4.14.0",
+        "lodash": "^4.17.4",
+        "socket.io": "^1.7.2"
+    },
+    "devDependencies": {
+        "babel-core": "^6.21.0",
+        "babel-loader": "^6.2.10",
+        "babel-plugin-add-module-exports": "^0.2.1",
+        "babel-plugin-react-html-attrs": "^2.0.0",
+        "babel-plugin-transform-class-properties": "^6.19.0",
+        "babel-plugin-transform-decorators-legacy": "^1.3.4",
+        "babel-preset-es2015": "^6.18.0",
+        "babel-preset-react": "^6.16.0",
+        "babel-preset-stage-0": "^6.16.0",
+        "babel-preset-stage-2": "^6.18.0",
+        "dat-gui": "^0.5.0",
+        "p5": "^0.5.7",
+        "reinforcenode": "^1.0.1",
+        "webpack": "^1.14.0",
+        "webpack-dev-middleware": "^1.9.0",
+        "webpack-dev-server": "^1.16.2",
+        "webpack-hot-middleware": "^2.15.0"
+    }
+}
