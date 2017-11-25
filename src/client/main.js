@@ -21,6 +21,7 @@ const sketch = function(p) {
         socket.on('HANDSHAKE', cmd => {
             console.log('HS: ', cmd)
             socket.start()
+            //socket.loadAi('test')
             if (statusIntervalId) {
                 clearInterval(statusIntervalId)
             }

@@ -13,7 +13,7 @@ if (process.env.NODE_ENV !== 'production') {
     var config = require('../../webpack.config')
     var compiler = webpack(config)
 
-    app.use(webpackDevMiddleware(compiler, { noInfo: true, publicPath: config.output.publicPath }))
+    app.use(webpackDevMiddleware(compiler, { quiet: true, noInfo: true, publicPath: config.output.publicPath }))
     app.use(webpackHotMiddleware(compiler))
 }
 

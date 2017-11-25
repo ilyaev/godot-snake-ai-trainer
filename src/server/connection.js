@@ -47,6 +47,9 @@ const connection = (io, socket) => {
                     case 'STATUS':
                         arena.sendStatus()
                         break
+                    case 'LOAD_AI':
+                        arena.loadAI(cmd)
+                        break
                 }
             } catch (e) {
                 console.log(e)

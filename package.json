@@ -8,13 +8,17 @@
     "scripts": {
         "start:hot": "webpack -d && cp src/index.html dist/index.html && webpack-dev-server --content-base src/ --inline --hot",
         "startclient": "webpack -d && cp src/index.html dist/index.html && webpack-dev-server --content-base src/",
-        "start": "nodemon src/server/server.js",
+        "start": "cp src/index.html dist/index.html && nodemon src/server/server.js",
         "build": "webpack -p && cp src/index.html dist/index.html"
     },
     "dependencies": {
         "express": "^4.14.0",
         "lodash": "^4.17.4",
-        "socket.io": "^1.7.2"
+        "reinforcenode": "^1.0.1",
+        "socket.io": "^1.7.2",
+        "webpack": "^1.14.0",
+        "webpack-dev-middleware": "^1.9.0",
+        "webpack-hot-middleware": "^2.15.0"
     },
     "devDependencies": {
         "babel-core": "^6.21.0",
@@ -27,12 +31,8 @@
         "babel-preset-react": "^6.16.0",
         "babel-preset-stage-0": "^6.16.0",
         "babel-preset-stage-2": "^6.18.0",
-        "dat-gui": "^0.5.0",
-        "p5": "^0.5.7",
-        "reinforcenode": "^1.0.1",
-        "webpack": "^1.14.0",
-        "webpack-dev-middleware": "^1.9.0",
         "webpack-dev-server": "^1.16.2",
-        "webpack-hot-middleware": "^2.15.0"
+        "dat-gui": "^0.5.0",
+        "p5": "^0.5.7"
     }
 }

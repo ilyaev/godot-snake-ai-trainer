@@ -1,5 +1,6 @@
 import ioClient from 'socket.io-client'
 import scene, { calculateQvalue } from '../scene'
+import { DQNAgent } from 'reinforcenode'
 
 const socket = function(scene) {
     var io = ioClient('http://localhost:8080')
@@ -39,7 +40,7 @@ const socket = function(scene) {
             }
             if (cmd.code === 'STATUS') {
                 console.log('Step: ', cmd.result.step, ' / WINS: ', cmd.result.wins, ' brain: ', JSON.stringify(cmd.brain).length, ' F: ', cmd.target)
-                scene.agent = new RL.DQNAgent(scene.env, scene.spec)
+                scene.agent = new DQNAgent(scene.env, scene.spec)
                 scene.agent.fromJSON(cmd.brain)
                 scene.agent.epsilon = 0.1
                 calculateQvalue()
@@ -80,6 +81,12 @@ const socket = function(scene) {
             },
             getStatus: () => {
                 sendCommand({ cmd: 'STATUS' })
+            },
+            loadAi: name => {
+                sendCommand({
+                    cmd: 'LOAD_AI',
+                    name
+                })
             },
             on: (event, callback) => {
                 events[event] = callback

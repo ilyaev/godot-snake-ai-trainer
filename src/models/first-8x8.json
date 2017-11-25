@@ -13,6 +13,17 @@
         "x": 1,
         "y": 1
     },
+    "params": {
+        "numStates": 4,
+        "numActions": 4,
+        "maxX": 7,
+        "maxY": 7,
+        "target": {
+            "x": 6,
+            "y": 6
+        }
+    },
+    "spec": { "alpha": 0.03, "epsilon": 0.4, "learning_steps_per_iteration": 40, "experience_size": 10000, "gamma": 0.75 },
     "brain": {
         "nh": 100,
         "ns": 4,

@@ -1,3 +1,4 @@
+var fs = require('fs')
 const DQNAgent = require('reinforcenode').DQNAgent
 
 const actions = [
@@ -61,7 +62,32 @@ var runLearning = scene => {
     }
 }
 
-const initGame = (scene, cmd) => {
+const initGameFromModel = (scene, model) => {
+    if (scene.interval) {
+        clearInterval(scene.interval)
+    }
+    setTimeout(() => {
+        scene.agent = new DQNAgent(
+            {
+                getNumStates: () => model.params.numStates,
+                getMaxNumActions: () => model.params.numActions
+            },
+            model.spec
+        )
+        scene.agent.fromJSON(model.brain)
+        scene.result = model.result
+        scene.reward = 0
+        scene.maxX = model.params.maxX
+        scene.maxY = model.params.maxY
+        scene.target = model.params.target
+        scene.actor.x = 0
+        scene.actor.y = 0
+        scene.timeScale = 1
+        scene.interval = setInterval(runLearning(scene), 10)
+    }, 100)
+}
+
+const initGame = (scene, cmd, ai = false) => {
     if (scene.interval) {
         clearInterval(scene.interval)
     }
@@ -118,6 +144,7 @@ const arena = (io, socket) => {
             wins: 0
         },
         reward: 0,
+        aiName: false,
         interval: false
     }
 
@@ -127,6 +154,18 @@ const arena = (io, socket) => {
         },
         sendStatus: () => {
             return sendStatus(socket, scene)
+        },
+        loadAI: cmd => {
+            console.log('LOAD AI!!!', cmd)
+            scene.aiName = cmd.name
+            const fileName = __dirname.replace('server', 'models/' + cmd.name + '.json')
+            console.log('FN: ', fileName)
+            fs.readFile(fileName, 'utf8', function(err, json) {
+                if (!err) {
+                    var ai = JSON.parse(json)
+                    initGameFromModel(scene, ai)
+                }
+            })
         }
     }
 }

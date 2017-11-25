@@ -1,4 +1,5 @@
 import config from './config'
+import { DQNAgent, UTILS as R } from 'reinforcenode'
 
 const scene = {
     io: null,
@@ -15,6 +16,10 @@ const scene = {
         getMaxNumActions: function() {
             return 4
         }
+    },
+    params: {
+        numStates: 4,
+        numActions: 4
     },
     spec: { alpha: 0.03, epsilon: 0.4, learning_steps_per_iteration: 40, experience_size: 10000, gamma: 0.75 },
     actor: {
@@ -38,14 +43,13 @@ export const calculateQvalue = () => {
             s.setFrom([x / scene.maxX, y / scene.maxY, (scene.target.x - x) / scene.maxX, (scene.target.y - y) / scene.maxY])
             var amat = scene.agent.forwardQ(scene.agent.net, s, false)
             var a = R.maxi(amat.w) // returns index of argmax action
-            //console.log(x, y, amat.w.map(one => Math.round(one * 1000) / 1000).join(','), a)
             scene.qvalues[x][y] = amat.w.map(one => Math.round(one * 1000) / 1000)
         }
     }
 }
 
 const initScene = () => {
-    scene.agent = new RL.DQNAgent(scene.env, scene.spec)
+    scene.agent = new DQNAgent(scene.env, scene.spec)
     for (var x = 0; x <= scene.maxX; x++) {
         if (!scene.qvalues[x]) {
             scene.qvalues[x] = []
