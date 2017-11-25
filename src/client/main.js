@@ -11,15 +11,23 @@ const drawScene = sceneDrawer(scene)
 const updateScene = sceneUpdater(scene)
 const socket = socketClient(scene)()
 
+var statusIntervalId
+
 const sketch = function(p) {
     p.setup = function() {
         p.frameRate(10)
         p.createCanvas(window.innerWidth, window.innerHeight)
         scene.canvas = p
-        socket.start()
-        setInterval(() => {
-            socket.getStatus()
-        }, 5000)
+        socket.on('HANDSHAKE', cmd => {
+            console.log('HS: ', cmd)
+            socket.start()
+            if (statusIntervalId) {
+                clearInterval(statusIntervalId)
+            }
+            statusIntervalId = setInterval(() => {
+                socket.getStatus()
+            }, 5000)
+        })
     }
 
     p.draw = function() {
