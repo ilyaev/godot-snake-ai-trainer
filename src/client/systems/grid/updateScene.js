@@ -19,7 +19,7 @@ export const actions = [
     }
 ]
 
-import { restartActor } from '../scene'
+import { restartActor } from '../../scene/grid'
 
 const update = function(scene) {
     return () => {

@@ -1,26 +1,35 @@
-const arenaCreator = require('./arena')
-
-const colorText = (color, text) => {
-    const tpl = '\x1b[%COLOR%m\x1b[1m' + text + '\x1b[0m'
-
-    const map = {
-        red: '31',
-        yellow: '33',
-        green: '32'
-    }
-
-    return tpl.replace('%COLOR%', map[color] ? map[color] : map.red)
-}
+const gridArenaCreator = require('./arena/grid')
+const snakeArenaCreator = require('./arena/snake')
+const colorText = require('./debug').colorText
+const os = require('os')
 
 const sendCommand = (socket, code, json) => {
     const data = JSON.stringify(Object.assign({}, { code: code.toUpperCase() }, json))
-    console.log(colorText('green', code.toUpperCase()), data.substr(0, 100))
+    console.log(colorText('green', '▲' + code.toUpperCase()), ' for #' + socket.connectionId) //data.substr(0, 100))
     socket.emit('response', data)
+}
+
+const logLoadAverage = (get = false) => {
+    const max = os.cpus().length
+    const la = os.loadavg()[0]
+    const per = la / max
+    var color = 'green'
+    if (per > 30) {
+        color = 'yellow'
+    } else if (per > 70) {
+        color = 'red'
+    }
+
+    const result = colorText('magenta', 'LA: ') + colorText(color, Math.round(la * 1000) / 1000)
+    if (!get) {
+        console.log(result)
+    }
+    return result
 }
 
 const connection = (io, socket) => {
     var id
-    const arena = arenaCreator(io, socket, sendCommand)
+    var arena
 
     return {
         init: () => {
@@ -37,8 +46,18 @@ const connection = (io, socket) => {
                 if (cmd.connectionId != id) {
                     return
                 }
+                console.log(colorText('yellow', '▼' + code), ' for #' + cmd.connectionId + '@' + cmd.arena) // + ' / ' + logLoadAverage(true))
 
-                console.log(colorText('yellow', code), ' for #' + cmd.connectionId)
+                if (!arena) {
+                    switch (cmd.arena) {
+                        case 'SNAKE':
+                            arena = snakeArenaCreator(io, socket, sendCommand)
+                            break
+                        default:
+                            arena = gridArenaCreator(io, socket, sendCommand)
+                    }
+                    console.log(colorText('magenta', 'Initialize Arena: ' + cmd.arena))
+                }
 
                 switch (code) {
                     case 'START':
@@ -49,6 +68,15 @@ const connection = (io, socket) => {
                         break
                     case 'LOAD_AI':
                         arena.loadAI(cmd)
+                        break
+                    case 'SAVE_MODEL':
+                        arena.saveModel(cmd)
+                        break
+                    case 'LEARNING_SCALE':
+                        arena.updateLearningScale(cmd)
+                        break
+                    case 'LEARNING_SPEC':
+                        arena.updateLearningSpec(cmd)
                         break
                 }
             } catch (e) {

@@ -1,8 +1,9 @@
 import ioClient from 'socket.io-client'
-import scene, { calculateQvalue } from '../scene'
 import { DQNAgent } from 'reinforcenode'
 
-const socket = function(scene) {
+const socket = function(state) {
+    const scene = state.scene
+
     var io = ioClient('http://localhost:8080')
     var started = 0
     var fromLastWin = 0
@@ -13,11 +14,10 @@ const socket = function(scene) {
     const events = {}
 
     const sendCommand = data => {
-        io.emit('command', JSON.stringify(Object.assign({}, { connectionId, serverInstanceId }, data)))
+        io.emit('command', JSON.stringify(Object.assign({}, { connectionId, serverInstanceId, arena: 'SNAKE' }, data)))
     }
 
     var startNewExperiment = () => {
-        console.log('-------start new experiment---------')
         started = performance.now()
         fromLastWin = started
         lastClear = started
@@ -26,7 +26,9 @@ const socket = function(scene) {
             maxX: scene.maxX,
             maxY: scene.maxY,
             target: scene.target,
-            spec: scene.spec
+            spec: scene.spec,
+            actor: scene.defaultActor,
+            name: scene.modelName
         })
     }
 
@@ -43,18 +45,10 @@ const socket = function(scene) {
                 scene.agent = new DQNAgent(scene.env, scene.spec)
                 scene.agent.fromJSON(cmd.brain)
                 scene.agent.epsilon = 0.1
-                calculateQvalue()
+                state.snake.calculateQvalue()
 
                 if (wins != cmd.result.wins) {
                     fromLastWin = performance.now()
-                }
-
-                if (performance.now() - started > 10000 && cmd.result.wins === 0) {
-                    console.error('Experiment failed from begin')
-                    startNewExperiment()
-                } else if (performance.now() - fromLastWin > 10000 + cmd.result.wins / 5 * 5000 && cmd.result.step < 500000) {
-                    console.error('Experiment failed')
-                    startNewExperiment()
                 }
                 wins = cmd.result.wins
                 if (performance.now() - lastClear > 60000) {
@@ -82,10 +76,34 @@ const socket = function(scene) {
             getStatus: () => {
                 sendCommand({ cmd: 'STATUS' })
             },
+            saveModel: name => {
+                sendCommand({
+                    cmd: 'SAVE_MODEL',
+                    name,
+                    spec: scene.spec
+                })
+            },
             loadAi: name => {
                 sendCommand({
                     cmd: 'LOAD_AI',
-                    name
+                    name,
+                    maxX: scene.maxX,
+                    maxY: scene.maxY,
+                    target: scene.target,
+                    actor: scene.defaultActor,
+                    spec: scene.spec
+                })
+            },
+            updateLearningScale: scale => {
+                sendCommand({
+                    cmd: 'LEARNING_SCALE',
+                    value: scale
+                })
+            },
+            updateLearningSpec: spec => {
+                sendCommand({
+                    cmd: 'LEARNING_SPEC',
+                    value: spec
                 })
             },
             on: (event, callback) => {

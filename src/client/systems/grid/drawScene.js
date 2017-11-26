@@ -1,6 +1,6 @@
 import p5 from 'p5'
-import compose from '../lib/compose'
-import { generateState, recalcStateActionsReward } from '../scene'
+import compose from '../../lib/compose'
+import { generateState, recalcStateActionsReward } from '../../scene/grid'
 import { actions } from './updateScene'
 
 const draw = function(scene) {
