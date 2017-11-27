@@ -3,13 +3,11 @@ const DQNAgent = require('reinforcenode').DQNAgent
 const colorText = require('../debug').colorText
 var jsonfile = require('jsonfile')
 
-var oneStepCreator = state => {
+var oneStepCreator = (state, io) => {
     return () => {
         state.nextStep()
+        io.learningCycles++
         if (state.scene.nextStep) {
-            // setTimeout(() => {
-            //     state.scene.interval = setImmediate(state.scene.nextStep)
-            // }, 300)
             state.scene.interval = setImmediate(state.scene.nextStep)
         }
     }
@@ -45,12 +43,8 @@ const initGame = (scene, cmd, ai = false) => {
     }
     scene.agent = new DQNAgent(
         {
-            getNumStates: function() {
-                return 4
-            },
-            getMaxNumActions: function() {
-                return 4
-            }
+            getNumStates: () => scene.params.numStates,
+            getMaxNumActions: () => scene.params.numActions
         },
         cmd.spec
     )
@@ -86,8 +80,10 @@ const arena = (io, socket) => {
 
     scene.aiName = 'SNAKE'
 
-    const oneStep = oneStepCreator(state)
+    const oneStep = oneStepCreator(state, io)
     scene.nextStep = oneStep
+
+    var status = ''
 
     return {
         initGame: cmd => {
@@ -96,6 +92,12 @@ const arena = (io, socket) => {
         },
         sendStatus: () => {
             return sendStatus(socket, scene)
+        },
+        stopGame: cmd => {
+            if (scene.interval) {
+                clearImmediate(scene.interval)
+                scene.interval = false
+            }
         },
         loadAI: cmd => {
             scene.aiName = cmd.name
@@ -149,7 +151,15 @@ const arena = (io, socket) => {
                 }
             })
         },
-        getTimeScale: () => scene.timeScale
+        getTimeScale: () => scene.timeScale,
+        getAiName: () => scene.aiName,
+        getStatus: () => {
+            let result = 'STOPPED'
+            if (scene.interval) {
+                result = 'RUNNING'
+            }
+            return result
+        }
     }
 }
 

@@ -1,5 +1,5 @@
-const DQNAgent = require('reinforcenode').DQNAgent
-const R = require('reinforcenode').UTILS
+const DQNAgent = require('./agent').DQNAgent
+const R = require('./agent').R
 
 const clone = obj => JSON.parse(JSON.stringify(obj))
 const generateID = () => Math.round(Math.random() * 100000)
@@ -9,19 +9,19 @@ const config = {
     maxX: 7,
     maxY: 7,
     params: {
-        numStates: 6,
+        numStates: 9,
         numActions: 4
     },
     spec: { alpha: 0.02, epsilon: 0.05, learning_steps_per_iteration: 40, experience_size: 10000, gamma: 0.75 },
     actor: {
-        x: 2,
-        y: 2,
+        x: 3,
+        y: 3,
         averageSteps: 0,
         step: 0,
         tail: [
             {
-                x: 1,
-                y: 2
+                x: 2,
+                y: 3
             }
         ]
     },
@@ -93,13 +93,6 @@ module.exports = {
                 }
             }
             scene.agent = new DQNAgent(scene.env, scene.spec)
-            scene.actor.tail = [
-                {
-                    x: 1,
-                    y: 2,
-                    wait: 0
-                }
-            ]
             scene.defaultActor = clone(scene.actor)
 
             for (var x = 0; x <= scene.maxX; x++) {
@@ -132,9 +125,6 @@ module.exports = {
         }
 
         const growSnake = () => {
-            if (scene.actor.tail.length > 15) {
-                printField()
-            }
             const last = scene.actor.tail[scene.actor.tail.length - 1]
             scene.actor.tail.push({
                 x: last.x,
@@ -171,6 +161,9 @@ module.exports = {
             })
 
             var stepState = [
+                scene.actor.tail.length / scene.maxX * 1.5,
+                scene.actor.x / scene.maxX,
+                scene.actor.y / scene.maxY,
                 (scene.target.x - scene.actor.x) / scene.maxX,
                 (scene.target.y - scene.actor.y) / scene.maxY,
                 isFutureWall(0),
@@ -179,7 +172,29 @@ module.exports = {
                 isFutureWall(3)
             ]
 
-            var action = scene.agent.act(stepState)
+            const alowed = []
+
+            actions.forEach((direction, dirIndex) => {
+                if (isFutureWall(dirIndex)) {
+                    scene.agent.simulate(stepState, dirIndex, -1)
+                } else {
+                    alowed.push(dirIndex)
+                }
+            })
+
+            var action = scene.agent.actLimited(stepState, alowed)
+
+            if (action < 0) {
+                printField()
+                scene.agent.act(stepState)
+                footer = 'WALL'
+                restartActor(-1)
+                if (instanceProps.mode === 'server') {
+                    scene.agent.learn(-10)
+                }
+                return
+            }
+
             var act = actions[action]
 
             scene.actor.x = scene.actor.x + act.dx
@@ -228,7 +243,7 @@ module.exports = {
             }
             console.log('H: ', scene.actor.x, ',', scene.actor.y, ' T: ', scene.actor.tail.length) //, scene.actor, scene.actor.tail)
             var row = ''
-            console.log('-----------------')
+            console.log('-------- ' + scene.maxX + 'x' + scene.maxY + ' -------')
             for (var x = 0; x <= scene.maxX; x++) {
                 row = ''
                 for (var y = 0; y <= scene.maxY; y++) {

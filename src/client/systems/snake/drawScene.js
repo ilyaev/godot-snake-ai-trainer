@@ -28,24 +28,24 @@ const draw = function(state) {
                 canvas.push()
 
                 canvas.rect(nX, nY, cellSize, cellSize)
-                const minQ = Math.min(...scene.qvalues[x][y])
-                const maxQ = Math.max(...scene.qvalues[x][y])
-                actions.forEach((one, index) => {
-                    const q = scene.qvalues[x][y][index]
-                    canvas.push()
-                    if (q >= 0) {
-                        canvas.fill(0, 255, 0, 255 * q / maxQ)
-                    } else {
-                        canvas.fill(255, 0, 0, 255 * Math.abs(q / minQ))
-                    }
-                    if (q === maxQ) {
-                        canvas.fill(0, 0, 255, 125)
-                    }
-                    //canvas.fill(q >= 0 ? 'green' : 'red')
-                    canvas.translate(nX + cellSize / 2.5, nY + cellSize / 2.5)
-                    canvas.rect(cellSize / 4 * one.dx, cellSize / 4 * one.dy, cellSize / 4, cellSize / 4)
-                    canvas.pop()
-                })
+                // const minQ = Math.min(...scene.qvalues[x][y])
+                // const maxQ = Math.max(...scene.qvalues[x][y])
+                // actions.forEach((one, index) => {
+                //     const q = scene.qvalues[x][y][index]
+                //     canvas.push()
+                //     if (q >= 0) {
+                //         canvas.fill(0, 255, 0, 255 * q / maxQ)
+                //     } else {
+                //         canvas.fill(255, 0, 0, 255 * Math.abs(q / minQ))
+                //     }
+                //     if (q === maxQ) {
+                //         canvas.fill(0, 0, 255, 125)
+                //     }
+                //     //canvas.fill(q >= 0 ? 'green' : 'red')
+                //     canvas.translate(nX + cellSize / 2.5, nY + cellSize / 2.5)
+                //     canvas.rect(cellSize / 4 * one.dx, cellSize / 4 * one.dy, cellSize / 4, cellSize / 4)
+                //     canvas.pop()
+                // })
 
                 canvas.pop()
             }

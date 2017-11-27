@@ -14,9 +14,11 @@ const drawScene = sceneDrawer(state)
 const updateScene = sceneUpdater(state)
 const socket = socketClient(state)()
 
-var statusIntervalId
+var statusIntervalId = false
+var pollIntervalId
 
 const startLearning = () => {
+    console.log('--START Learning')
     if (statusIntervalId) {
         clearInterval(statusIntervalId)
     }
@@ -26,19 +28,83 @@ const startLearning = () => {
     }, 5000)
 }
 
+const stopLearning = () => {
+    console.log('--STOP Learning')
+    if (statusIntervalId) {
+        clearInterval(statusIntervalId)
+        statusIntervalId = false
+    }
+    socket.stopGame(scene.modelName)
+}
+
+const pollServer = () => {
+    if (pollIntervalId) {
+        clearInterval(pollIntervalId)
+    }
+    pollIntervalId = setInterval(() => {
+        socket.getServerStatus()
+    }, 1000)
+}
+
 const saveModel = () => {
     socket.saveModel(scene.modelName)
 }
+
+const renderConsole = text => {
+    const height = 205
+    const offsetX = 320
+    const offsetY = window.innerHeight - height - 10
+    const width = window.innerWidth - offsetX - 20
+    return '<div id="gl-consol" style="overflow: auto; scroll: auto; font-size: 12px; font-family: \'Roboto Mono\', monospace; color:#e1822d; width: %WIDTH%px; height: %HEIGHT%px; background-color: black; border: 1px solid black; padding: 5px">%TEXT%</div>'
+        .replace('%TEXT%', text)
+        .replace('%WIDTH%', width)
+        .replace('%HEIGHT%', height)
+}
+
+let consol
+let dashboard
 
 const sketch = function(p) {
     p.setup = function() {
         p.frameRate(10)
         p.createCanvas(window.innerWidth, window.innerHeight)
         scene.canvas = p
+
+        let elConsole = p.createElement('div', renderConsole('Console here'))
+        elConsole.position(320, window.innerHeight - 220)
+
+        consol = (() => {
+            const rows = []
+
+            const refresh = () => elConsole.html(renderConsole(rows.join('<br>')))
+
+            const scrollToBottom = () => {
+                const el = document.getElementById('gl-consol')
+                el.scrollTop = el.scrollHeight
+                el.scrollIntoView(false)
+            }
+
+            return {
+                log: (row, color = false) => {
+                    rows.push(color ? '<font style="color:' + color + '">' + row + '</font>' : row)
+                    refresh()
+                    scrollToBottom()
+                },
+                set: txt => {
+                    rows.length = 0
+                    rows.push(txt)
+                    refresh()
+                    scrollToBottom()
+                }
+            }
+        })()
+
+        socket.setConsole(consol)
         socket.on('HANDSHAKE', cmd => {
+            stopLearning()
             scene.connectionId = cmd.connectionId
             scene.serverInstanceId = cmd.serverInstanceId
-            startLearning()
+            pollServer()
         })
         listenToScene('spec', (newValue, oldValue) => {
             socket.updateLearningSpec(newValue)
@@ -98,6 +164,10 @@ export default class MainSketch {
 
     startLearning = () => {
         startLearning()
+    }
+
+    stopLearning = () => {
+        stopLearning()
     }
 
     saveModel = () => {
@@ -162,6 +232,7 @@ export default class MainSketch {
 
         var actions = gui.addFolder('Actions')
         actions.add(this, 'startLearning').name('Start Learning')
+        actions.add(this, 'stopLearning').name('Stop Learning')
         actions.add(this, 'saveModel').name('Save Model')
         actions.open()
 

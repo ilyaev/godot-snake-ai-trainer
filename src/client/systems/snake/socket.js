@@ -17,6 +17,9 @@ const socket = function(state) {
         io.emit('command', JSON.stringify(Object.assign({}, { connectionId, serverInstanceId, arena: 'SNAKE' }, data)))
     }
 
+    var consol
+    var dashboard
+
     var startNewExperiment = () => {
         started = performance.now()
         fromLastWin = started
@@ -30,6 +33,32 @@ const socket = function(state) {
             actor: scene.defaultActor,
             name: scene.modelName
         })
+    }
+
+    var updateStatusDashboard = cmd => {
+        let rows = []
+        let my
+        const other = []
+
+        rows.push('---Server: ' + cmd.status + ', UT: ' + Math.floor(cmd.upTime / 1000) + 's' + ', LS: ' + cmd.learningCycles)
+
+        cmd.clients.forEach(one => {
+            if (one.id == connectionId) {
+                my = one
+            }
+            let row = []
+            row.push('@' + one.id)
+            if (one.arena) {
+                row.push(one.arena.ai)
+                row.push(one.arena.status)
+            }
+            other.push(row.join(', '))
+        })
+
+        rows.push('@' + my.id)
+        rows.push('---All Clients: ' + cmd.clients.length)
+
+        dashboard.set(rows.concat(other).join('<br>'))
     }
 
     io.on('response', response => {
@@ -56,6 +85,9 @@ const socket = function(state) {
                     lastClear = performance.now()
                 }
             }
+            if (cmd.code === 'SERVER_STATUS') {
+                updateStatusDashboard(cmd)
+            }
 
             if (typeof events[cmd.code] !== 'undefined') {
                 events[cmd.code](cmd)
@@ -67,6 +99,11 @@ const socket = function(state) {
 
     return () => {
         return {
+            setConsole: obj => {
+                consol = obj
+                dashboard = obj
+                consol.log('---Consol initialized---', 'green')
+            },
             command: data => {
                 sendCommand(data)
             },
@@ -76,11 +113,20 @@ const socket = function(state) {
             getStatus: () => {
                 sendCommand({ cmd: 'STATUS' })
             },
+            getServerStatus: () => {
+                sendCommand({ cmd: 'SERVER_STATUS' })
+            },
             saveModel: name => {
                 sendCommand({
                     cmd: 'SAVE_MODEL',
                     name,
                     spec: scene.spec
+                })
+            },
+            stopGame: name => {
+                sendCommand({
+                    cmd: 'STOP_GAME',
+                    name
                 })
             },
             loadAi: name => {

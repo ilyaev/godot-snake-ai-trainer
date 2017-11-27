@@ -9,6 +9,11 @@ const sendCommand = (socket, code, json) => {
     socket.emit('response', data)
 }
 
+const getTimeMSFloat = () => {
+    var hrtime = process.hrtime()
+    return (hrtime[0] * 1000000 + hrtime[1] / 1000) / 1000
+}
+
 const logLoadAverage = (get = false) => {
     const max = os.cpus().length
     const la = os.loadavg()[0]
@@ -31,10 +36,38 @@ const connection = (io, socket) => {
     var id
     var arena
 
+    var sendServerStatus = () => {
+        sendCommand(socket, 'SERVER_STATUS', {
+            status: 'OK',
+            learningCycles: io.learningCycles,
+            upTime: getTimeMSFloat() - io.started,
+            timestamp: socket.lastPoll,
+            clients: Object.keys(io.sockets.sockets).reduce((result, key) => {
+                const cur = io.sockets.sockets[key]
+                const one = {
+                    key: key,
+                    id: cur.connectionId,
+                    arena: cur.arena
+                        ? {
+                              ai: cur.arena.getAiName(),
+                              status: cur.arena.getStatus()
+                          }
+                        : null
+                }
+                result.push(one)
+                return result
+            }, [])
+        })
+
+        socket.lastPoll = getTimeMSFloat()
+    }
+
     return {
         init: () => {
             id = Math.round(Math.random() * 10000000)
+            socket.lastPoll = getTimeMSFloat()
             socket.sendCommand = sendCommand
+            socket.connectionId = id
             return id
         },
         execCommand: data => {
@@ -56,6 +89,7 @@ const connection = (io, socket) => {
                         default:
                             arena = gridArenaCreator(io, socket, sendCommand)
                     }
+                    socket.arena = arena
                     console.log(colorText('magenta', 'Initialize Arena: ' + cmd.arena))
                 }
 
@@ -66,8 +100,14 @@ const connection = (io, socket) => {
                     case 'STATUS':
                         arena.sendStatus()
                         break
+                    case 'SERVER_STATUS':
+                        sendServerStatus()
+                        break
                     case 'LOAD_AI':
                         arena.loadAI(cmd)
+                        break
+                    case 'STOP_GAME':
+                        arena.stopGame(cmd)
                         break
                     case 'SAVE_MODEL':
                         arena.saveModel(cmd)
@@ -95,5 +135,6 @@ const connection = (io, socket) => {
 
 module.exports = {
     connection,
-    sendCommand
+    sendCommand,
+    getNow: getTimeMSFloat
 }

@@ -3,7 +3,7 @@ import { DQNAgent, UTILS as R } from 'reinforcenode'
 
 const extraProperties = {
     io: null,
-    autosave: true,
+    autosave: false,
     autosaveTimeout: 50,
     autosaveLast: 0,
     modelName: '',
