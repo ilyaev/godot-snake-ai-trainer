@@ -7,7 +7,7 @@ const socket = function(state) {
     var io =
         document.location.href.indexOf('localhost') !== -1
             ? ioClient('http://localhost:8080')
-            : ioClient('http://http://godot-snake-ai-trainer.herokuapp.com')
+            : ioClient('http://godot-snake-ai-trainer.herokuapp.com')
     var started = 0
     var fromLastWin = 0
     var wins = 0
