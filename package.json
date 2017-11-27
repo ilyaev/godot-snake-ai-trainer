@@ -11,7 +11,7 @@
         "dev": "cp src/style.css dist/style.css && cp src/index.html dist/index.html && nodemon --ignore 'models/*' src/server/server.js",
         "start": "node src/server/server.js",
         "build": "webpack --progress --display-error-details && cp src/index.html dist/index.html",
-        "postinstall": "webpack --progress --display-error-details && cp src/index.html dist/index.html"
+        "postinstall": "webpack --progress --display-error-details && cp src/index.html dist/index.html && chmod 777 src/models"
     },
     "dependencies": {
         "express": "^4.14.0",
