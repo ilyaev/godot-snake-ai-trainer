@@ -5,6 +5,8 @@ var path = require('path')
 var DIST_DIR = path.resolve(__dirname, 'dist')
 var SRC_DIR = path.resolve(__dirname, 'src')
 
+console.log('DIRS: ', DIST_DIR, ' , ', SRC_DIR)
+
 module.exports = {
     context: __dirname,
     devtool: debug ? 'inline-sourcemap' : null,
