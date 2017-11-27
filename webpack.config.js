@@ -12,7 +12,7 @@ module.exports = {
     devtool: debug ? 'inline-sourcemap' : null,
     entry: SRC_DIR + '/client/index.js',
     output: {
-        path: DIST_DIR + '/app',
+        path: 'dist/app',
         filename: 'bundle.js',
         publicPath: '/app/'
     },

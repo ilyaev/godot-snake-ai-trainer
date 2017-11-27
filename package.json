@@ -10,7 +10,7 @@
         "startclient": "webpack -d && cp src/index.html dist/index.html && webpack-dev-server --content-base src/",
         "dev": "cp src/style.css dist/style.css && cp src/index.html dist/index.html && nodemon --ignore 'models/*' src/server/server.js",
         "start": "node src/server/server.js",
-        "build": "webpack && cp src/index.html dist/index.html"
+        "build": "webpack --progress --display-error-details && cp src/index.html dist/index.html"
     },
     "dependencies": {
         "express": "^4.14.0",
