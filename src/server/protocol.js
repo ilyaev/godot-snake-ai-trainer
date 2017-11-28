@@ -1,6 +1,7 @@
 var DQNAgent = require('reinforcenode').DQNAgent
 const connectionCreator = require('./connection').connection
 const getNow = require('./connection').getNow
+const storageCreator = require('./storage').storageCreator
 
 const connections = {}
 
@@ -18,11 +19,16 @@ const protocol = io => {
             io.instanceId = Math.round(Math.random() * 1000000)
             io.learningCycles = 0
             io.started = getNow()
+            io.storage = storageCreator()
+            io.workers = storageCreator()
             io.sockets.on('connection', function(socket) {
                 var connection = setupConnection(io, socket)
                 connection.handshake()
                 socket.on('command', function(data) {
                     connection.execCommand(data)
+                })
+                socket.on('disconnect', function(data) {
+                    connection.disconnect()
                 })
             })
         }

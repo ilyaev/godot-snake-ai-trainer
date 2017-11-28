@@ -1,5 +1,4 @@
 import config from '../config'
-import { DQNAgent, UTILS as R } from 'reinforcenode'
 
 const extraProperties = {
     io: null,

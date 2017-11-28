@@ -50,6 +50,10 @@ const saveModel = () => {
     socket.saveModel(scene.modelName)
 }
 
+const downloadModel = () => {
+    socket.downloadModel(scene.modelName)
+}
+
 const renderConsole = text => {
     const height = 205
     const offsetX = 320
@@ -174,6 +178,10 @@ export default class MainSketch {
         saveModel()
     }
 
+    downloadModel = () => {
+        downloadModel()
+    }
+
     setupGUI = () => {
         var gui = new dat.gui.GUI({
             autoPlace: false,
@@ -234,6 +242,7 @@ export default class MainSketch {
         actions.add(this, 'startLearning').name('Start Learning')
         actions.add(this, 'stopLearning').name('Stop Learning')
         actions.add(this, 'saveModel').name('Save Model')
+        actions.add(this, 'downloadModel').name('Download Model')
         actions.open()
 
         this.gui = gui

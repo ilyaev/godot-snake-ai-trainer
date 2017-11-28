@@ -44,21 +44,27 @@ const socket = function(state) {
         const other = []
 
         rows.push('---Server: ' + cmd.status + ', UT: ' + Math.floor(cmd.upTime / 1000) + 's' + ', LS: ' + cmd.learningCycles)
-
+        rows.push(
+            '---Models: ' + cmd.models.map(one => '<a style="color:#e1822d" href="#' + one + '" target="_blank">' + one + '</a>').join(', ')
+        )
+        rows.push('---Silent workers: ' + cmd.workers.map(one => one.model).join(', '))
         cmd.clients.forEach(one => {
             if (one.id == connectionId) {
                 my = one
             }
             let row = []
-            row.push('@' + one.id)
+            row.push(one.id)
             if (one.arena) {
                 row.push(one.arena.ai)
                 row.push(one.arena.status)
+                row.push('Steps: ' + one.arena.result.step)
+                row.push('Goals: ' + one.arena.result.wins)
+                row.push('E: ' + Math.round(one.arena.spec.epsilon * 1000) / 1000)
             }
             other.push(row.join(', '))
         })
 
-        rows.push('@' + my.id)
+        rows.push('---My Connection ' + my.id)
         rows.push('---All Clients: ' + cmd.clients.length)
 
         dashboard.set(rows.concat(other).join('<br>'))
@@ -73,7 +79,16 @@ const socket = function(state) {
                 serverInstanceId = cmd.serverInstanceId
             }
             if (cmd.code === 'STATUS') {
-                console.log('Step: ', cmd.result.step, ' / WINS: ', cmd.result.wins, ' brain: ', JSON.stringify(cmd.brain).length, ' F: ', cmd.target)
+                console.log(
+                    'Step: ',
+                    cmd.result.step,
+                    ' / WINS: ',
+                    cmd.result.wins,
+                    ' brain: ',
+                    JSON.stringify(cmd.brain).length,
+                    ' F: ',
+                    cmd.target
+                )
                 scene.agent = new DQNAgent(scene.env, scene.spec)
                 scene.agent.fromJSON(cmd.brain)
                 scene.agent.epsilon = 0.1
@@ -90,6 +105,12 @@ const socket = function(state) {
             }
             if (cmd.code === 'SERVER_STATUS') {
                 updateStatusDashboard(cmd)
+            }
+
+            if (cmd.code === 'DOWNLOAD_MODEL') {
+                var w = window.open('_blank')
+                w.document.write(JSON.stringify(cmd))
+                w.focus()
             }
 
             if (typeof events[cmd.code] !== 'undefined') {
@@ -124,6 +145,12 @@ const socket = function(state) {
                     cmd: 'SAVE_MODEL',
                     name,
                     spec: scene.spec
+                })
+            },
+            downloadModel: name => {
+                sendCommand({
+                    cmd: 'DOWNLOAD_MODEL',
+                    name
                 })
             },
             stopGame: name => {

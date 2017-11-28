@@ -8,11 +8,12 @@ const config = {
     id: 0,
     maxX: 7,
     maxY: 7,
+    modelName: '',
     params: {
-        numStates: 9,
+        numStates: 8,
         numActions: 4
     },
-    spec: { alpha: 0.02, epsilon: 0.05, learning_steps_per_iteration: 40, experience_size: 10000, gamma: 0.75 },
+    spec: { alpha: 0.02, epsilon: 0.25, learning_steps_per_iteration: 40, experience_size: 10000, gamma: 0.75 },
     actor: {
         x: 3,
         y: 3,
@@ -161,7 +162,7 @@ module.exports = {
             })
 
             var stepState = [
-                scene.actor.tail.length / scene.maxX * 1.5,
+                //scene.actor.tail.length / scene.maxX * 1.5,
                 scene.actor.x / scene.maxX,
                 scene.actor.y / scene.maxY,
                 (scene.target.x - scene.actor.x) / scene.maxX,
@@ -172,29 +173,30 @@ module.exports = {
                 isFutureWall(3)
             ]
 
-            const alowed = []
+            // const alowed = []
 
-            actions.forEach((direction, dirIndex) => {
-                if (isFutureWall(dirIndex)) {
-                    scene.agent.simulate(stepState, dirIndex, -1)
-                } else {
-                    alowed.push(dirIndex)
-                }
-            })
+            // actions.forEach((direction, dirIndex) => {
+            //     if (isFutureWall(dirIndex)) {
+            //         scene.agent.simulate(stepState, dirIndex, -1)
+            //     } else {
+            //         alowed.push(dirIndex)
+            //     }
+            // })
 
-            var action = scene.agent.actLimited(stepState, alowed)
+            // var action = scene.agent.actLimited(stepState, alowed)
+            // //printField()
+            // if (action < 0) {
+            //     printField()
+            //     scene.agent.act(stepState)
+            //     footer = 'WALL'
+            //     restartActor(-1)
+            //     if (instanceProps.mode === 'server') {
+            //         scene.agent.learn(-10)
+            //     }
+            //     return
+            // }
 
-            if (action < 0) {
-                printField()
-                scene.agent.act(stepState)
-                footer = 'WALL'
-                restartActor(-1)
-                if (instanceProps.mode === 'server') {
-                    scene.agent.learn(-10)
-                }
-                return
-            }
-
+            var action = scene.agent.act(stepState)
             var act = actions[action]
 
             scene.actor.x = scene.actor.x + act.dx
@@ -210,6 +212,7 @@ module.exports = {
             } else if (isWall(scene.actor.x, scene.actor.y)) {
                 footer = 'WALL'
                 restartActor(-1)
+
                 if (instanceProps.mode === 'server') {
                     scene.agent.learn(-1)
                 }

@@ -3,16 +3,6 @@ const DQNAgent = require('reinforcenode').DQNAgent
 const colorText = require('../debug').colorText
 var jsonfile = require('jsonfile')
 
-var oneStepCreator = (state, io) => {
-    return () => {
-        state.nextStep()
-        io.learningCycles++
-        if (state.scene.nextStep) {
-            state.scene.interval = setImmediate(state.scene.nextStep)
-        }
-    }
-}
-
 const initGameFromModel = (scene, model) => {
     if (scene.interval) {
         clearImmediate(scene.interval)
@@ -80,41 +70,69 @@ const arena = (io, socket) => {
 
     scene.aiName = 'SNAKE'
 
-    const oneStep = oneStepCreator(state, io)
-    scene.nextStep = oneStep
+    var status = 'IDLE'
 
-    var status = ''
+    const startLearning = () => {
+        status = 'RUNNING'
+        socket.worker.start()
+        socket.worker.command({
+            cmd: 'learn',
+            maxX: scene.maxX,
+            maxY: scene.maxY,
+            brain: scene.agent.toJSON(),
+            params: scene.params,
+            spec: scene.spec,
+            actor: scene.actor,
+            result: scene.result,
+            modelName: scene.modelName
+        })
+    }
+
+    const updateLearningSpec = spec => {
+        socket.worker.command({
+            cmd: 'spec',
+            value: spec
+        })
+    }
 
     return {
         initGame: cmd => {
             initGame(scene, cmd)
-            scene.interval = setImmediate(oneStep)
         },
         sendStatus: () => {
             return sendStatus(socket, scene)
         },
         stopGame: cmd => {
-            if (scene.interval) {
-                clearImmediate(scene.interval)
-                scene.interval = false
+            status = 'STOPPED'
+            socket.worker.command({
+                cmd: 'finish'
+            })
+        },
+        fromWorker: cmd => {
+            switch (cmd.cmd) {
+                case 'sync':
+                    scene.agent.fromJSON(cmd.brain)
+                    break
+                case 'status':
+                    scene.result = cmd.result
+                    break
             }
         },
         loadAI: cmd => {
             scene.aiName = cmd.name
-            const fileName = __dirname.replace('server/arena', 'models/' + cmd.name + '.json')
-            fs.readFile(fileName, 'utf8', function(err, json) {
-                if (!err) {
-                    console.log(colorText('green', '-load existing'), colorText('navy', cmd.name))
-                    var ai = JSON.parse(json)
-                    initGameFromModel(scene, ai)
-                    scene.interval = setImmediate(oneStep)
-                } else {
-                    console.log(colorText('red', '-start new'), colorText('navy', cmd.name))
-                    initGame(scene, cmd)
-                    scene.interval = setImmediate(oneStep)
-                }
-                sendStatus(socket, scene)
-            })
+            const model = io.storage.get(cmd.name)
+
+            if (model) {
+                console.log(colorText('green', '-load existing'), colorText('navy', cmd.name))
+                initGameFromModel(scene, model)
+            } else {
+                console.log(colorText('red', '-start new'), colorText('navy', cmd.name))
+                initGame(scene, cmd)
+            }
+
+            scene.modelName = cmd.name
+            startLearning()
+            sendStatus(socket, scene)
         },
         updateLearningScale: cmd => {
             scene.timeScale = cmd.value
@@ -126,14 +144,14 @@ const arena = (io, socket) => {
             scene.agent.gamma = cmd.value.gamma
             scene.agent.experienceSize = cmd.value.experience_size
             scene.agent.experienceAddEvery = cmd.value.learning_steps_per_iteration
+            updateLearningSpec(cmd.value)
         },
         saveModel: cmd => {
-            const fileName = __dirname.replace('server/arena', 'models/' + cmd.name + '.json')
             const model = Object.assign(
                 {},
                 {
                     arena: 'SNAKE',
-                    spec: scene.spec, //cmd.spec,
+                    spec: scene.spec,
                     name: cmd.name,
                     result: scene.result,
                     params: Object.assign({}, scene.params, {
@@ -143,23 +161,15 @@ const arena = (io, socket) => {
                     brain: scene.agent.toJSON()
                 }
             )
-            jsonfile.writeFile(fileName, model, { spaces: 2 }, function(err) {
-                if (!err) {
-                    console.log(colorText('green', '-Success'))
-                } else {
-                    console.log(colorText('red', '-Fail'), err)
-                }
-            })
+
+            io.storage.set(cmd.name, model)
         },
         getTimeScale: () => scene.timeScale,
         getAiName: () => scene.aiName,
         getStatus: () => {
-            let result = 'STOPPED'
-            if (scene.interval) {
-                result = 'RUNNING'
-            }
-            return result
-        }
+            return status
+        },
+        getScene: () => scene
     }
 }
 
