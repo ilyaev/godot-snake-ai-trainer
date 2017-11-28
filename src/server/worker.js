@@ -39,6 +39,14 @@ process.on('message', msg => {
         case 'spec':
             updateSpec(cmd)
             break
+        case 'sync':
+            if (snake) {
+                send({
+                    cmd: 'sync',
+                    brain: snake.scene.agent.toJSON()
+                })
+            }
+            break
         default:
             send({
                 cmd: 'Invalid Command: ' + JSON.stringify(msg)

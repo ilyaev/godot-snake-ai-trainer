@@ -95,6 +95,27 @@ const arena = (io, socket) => {
         })
     }
 
+    const saveModel = () => {
+        const model = Object.assign(
+            {},
+            {
+                arena: 'SNAKE',
+                spec: scene.spec,
+                name: scene.modelName,
+                result: scene.result,
+                maxX: scene.maxX,
+                maxY: scene.maxY,
+                params: Object.assign({}, scene.params, {
+                    maxX: scene.maxX,
+                    maxY: scene.maxY
+                }),
+                brain: scene.agent.toJSON()
+            }
+        )
+
+        io.storage.set(scene.modelName, model)
+    }
+
     return {
         initGame: cmd => {
             initGame(scene, cmd)
@@ -112,6 +133,7 @@ const arena = (io, socket) => {
             switch (cmd.cmd) {
                 case 'sync':
                     scene.agent.fromJSON(cmd.brain)
+                    saveModel()
                     break
                 case 'status':
                     scene.result = cmd.result
@@ -147,22 +169,7 @@ const arena = (io, socket) => {
             updateLearningSpec(cmd.value)
         },
         saveModel: cmd => {
-            const model = Object.assign(
-                {},
-                {
-                    arena: 'SNAKE',
-                    spec: scene.spec,
-                    name: cmd.name,
-                    result: scene.result,
-                    params: Object.assign({}, scene.params, {
-                        maxX: scene.maxX,
-                        maxY: scene.maxY
-                    }),
-                    brain: scene.agent.toJSON()
-                }
-            )
-
-            io.storage.set(cmd.name, model)
+            saveModel()
         },
         getTimeScale: () => scene.timeScale,
         getAiName: () => scene.aiName,

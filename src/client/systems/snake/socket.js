@@ -91,7 +91,7 @@ const socket = function(state) {
                 )
                 scene.agent = new DQNAgent(scene.env, scene.spec)
                 scene.agent.fromJSON(cmd.brain)
-                scene.agent.epsilon = 0.1
+                scene.agent.epsilon = 0.05
                 state.snake.calculateQvalue()
 
                 if (wins != cmd.result.wins) {

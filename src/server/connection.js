@@ -102,7 +102,7 @@ const connection = (io, socket) => {
             sendCommand(socket, 'DOWNLOAD_MODEL', {
                 modelName: name,
                 spec: scene.spec,
-                params: scene.params,
+                params: Object.assign({}, { maxX: scene.maxX, maxY: scene.maxY }, scene.params),
                 maxX: scene.maxX,
                 maxY: scene.maxY,
                 actor: scene.actor,
@@ -249,7 +249,10 @@ const connection = (io, socket) => {
                         arena.updateLearningSpec(cmd)
                         break
                     case 'DOWNLOAD_MODEL':
-                        sendModel(cmd.name)
+                        socket.worker.command({ cmd: 'sync' })
+                        setTimeout(() => {
+                            sendModel(cmd.name)
+                        }, 200)
                         break
                 }
             } catch (e) {
