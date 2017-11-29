@@ -69,6 +69,9 @@ module.exports = {
 
         const scene = clone(config)
         scene.id = generateID()
+
+        var walls = {}
+
         const calculateQvalue = () => {
             if (instanceProps.mode !== 'client') {
                 return false
@@ -100,8 +103,12 @@ module.exports = {
                 if (!scene.qvalues[x]) {
                     scene.qvalues[x] = []
                 }
+                if (!walls[x]) {
+                    walls[x] = {}
+                }
                 for (var y = 0; y <= scene.maxY; y++) {
                     scene.qvalues[x][y] = 0
+                    walls[x][y] = false
                 }
             }
 
@@ -121,8 +128,15 @@ module.exports = {
         }
 
         const respawnFood = () => {
-            scene.target.x = Math.round(Math.random() * scene.maxX)
-            scene.target.y = Math.round(Math.random() * scene.maxY)
+            var wall = true
+            var x, y
+            while (wall == true) {
+                x = Math.round(Math.random() * scene.maxX)
+                y = Math.round(Math.random() * scene.maxY)
+                wall = isWall(x, y)
+            }
+            scene.target.x = x
+            scene.target.y = y
         }
 
         const growSnake = () => {
@@ -136,16 +150,10 @@ module.exports = {
         }
 
         const isWall = (x, y) => {
-            var result = false
-
-            if (x < 0 || y < 0 || x > scene.maxX || y > scene.maxY) {
-                result = true
-            } else {
-                result = scene.actor.tail.reduce((res, next) => {
-                    return res || (next.x == x && next.y == y)
-                }, false)
+            if (typeof walls[x] === 'undefined' || typeof walls[x][y] === 'undefined') {
+                return true
             }
-            return result
+            return walls[x][y]
         }
 
         const isFutureWall = action => {
@@ -153,7 +161,19 @@ module.exports = {
             return isWall(scene.actor.x + d.dx, scene.actor.y + d.dy) ? 1 : 0
         }
 
+        const buildWalls = () => {
+            for (var x = 0; x <= scene.maxX; x++) {
+                for (var y = 0; y <= scene.maxY; y++) {
+                    walls[x][y] = false
+                }
+            }
+
+            walls[scene.actor.x][scene.actor.y] = true
+            scene.actor.tail.forEach(one => (walls[one.x][one.y] = true))
+        }
+
         const nextStep = () => {
+            buildWalls()
             scene.result.step++
             var footer = ''
             var prev = clone({
