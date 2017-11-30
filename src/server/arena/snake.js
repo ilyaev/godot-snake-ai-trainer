@@ -73,6 +73,9 @@ const arena = (io, socket) => {
     var status = 'IDLE'
 
     const startLearning = () => {
+        if (!socket.worker) {
+            return
+        }
         status = 'RUNNING'
         socket.worker.start()
         socket.worker.command({
@@ -89,6 +92,9 @@ const arena = (io, socket) => {
     }
 
     const updateLearningSpec = spec => {
+        if (!socket.worker) {
+            return
+        }
         socket.worker.command({
             cmd: 'spec',
             value: spec
@@ -112,7 +118,6 @@ const arena = (io, socket) => {
                 brain: scene.agent.toJSON()
             }
         )
-
         io.storage.set(scene.modelName, model)
     }
 
@@ -124,6 +129,9 @@ const arena = (io, socket) => {
             return sendStatus(socket, scene)
         },
         stopGame: cmd => {
+            if (!socket.worker) {
+                return
+            }
             status = 'STOPPED'
             socket.worker.command({
                 cmd: 'finish'
@@ -142,6 +150,7 @@ const arena = (io, socket) => {
         },
         loadAI: cmd => {
             scene.aiName = cmd.name
+            scene.modelName = cmd.name
             const model = io.storage.get(cmd.name)
 
             if (model) {
@@ -150,6 +159,7 @@ const arena = (io, socket) => {
             } else {
                 console.log(colorText('red', '-start new'), colorText('navy', cmd.name))
                 initGame(scene, cmd)
+                saveModel()
             }
 
             scene.modelName = cmd.name

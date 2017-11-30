@@ -6,6 +6,8 @@ var jsonfile = require('jsonfile')
 
 const connections = {}
 
+const maxWorkers = 1
+
 const setupConnection = (io, socket) => {
     var connection = connectionCreator(io, socket)
     var connectionId = connection.init()
@@ -15,7 +17,7 @@ const setupConnection = (io, socket) => {
 }
 
 const restoreStorage = io => {
-    const models = ['second']
+    const models = ['second', 'third']
     models.forEach(one => {
         const fileName = __dirname.replace('server', 'models/' + one + '.json')
         jsonfile.readFile(fileName, (err, json) => {
@@ -24,6 +26,29 @@ const restoreStorage = io => {
             }
         })
     })
+}
+
+const stopWorker = io => name => {
+    const worker = io.workers.get(name)
+    if (!worker) {
+        return
+    }
+    worker.command({
+        cmd: 'finish'
+    })
+}
+
+const capWorkers = io => name => {
+    let counter = 0
+    io.workers
+        .list()
+        .filter(one => one != name)
+        .filter(one => io.workers.get(one).isActive())
+        .reduce((result, next) => {
+            counter++
+            return counter > maxWorkers - 1 ? result.concat(next) : result
+        }, [])
+        .forEach(one => io.workers.get(one).stop())
 }
 
 const protocol = io => {
@@ -35,6 +60,10 @@ const protocol = io => {
             io.storage = storageCreator()
             io.workers = storageCreator()
             restoreStorage(io)
+
+            io.stopWorker = stopWorker(io)
+            io.capWorkers = capWorkers(io)
+
             io.sockets.on('connection', function(socket) {
                 var connection = setupConnection(io, socket)
                 connection.handshake()

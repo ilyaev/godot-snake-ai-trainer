@@ -14,16 +14,27 @@ const createWorker = socket => {
         }
     }
 
-    var listener = false
+    var listeners = {}
+
+    var status = {}
 
     return {
         start: () => {
             if (!fork) {
                 fork = forkProcess('src/server/worker.js')
                 fork.on('message', msg => {
-                    if (listener) {
-                        listener(msg)
+                    let cmd = {}
+                    try {
+                        cmd = JSON.parse(msg)
+                    } catch (e) {
+                        cmd = { cmd: 'null' }
                     }
+                    if (cmd.cmd === 'status') {
+                        status = cmd
+                    }
+                    Object.keys(listeners).forEach(key => {
+                        listeners[key](msg)
+                    })
                 })
                 fork.on('exit', signal => {
                     console.log('WORKER ' + id + ': Terminated with signal ', signal)
@@ -39,8 +50,15 @@ const createWorker = socket => {
         stop: () => {
             send({ cmd: 'finish' })
         },
-        setListener: f => {
-            listener = f
+        addListener: (key, cb) => {
+            if (!listeners[key]) {
+                listeners[key] = cb
+            }
+        },
+        removeListener: key => {
+            if (listeners[key]) {
+                delete listeners[key]
+            }
         },
         command: cmd => {
             if (!fork) {
@@ -51,6 +69,7 @@ const createWorker = socket => {
         setId: _id => {
             id = _id
         },
+        getStatus: () => status,
         isActive: () => (fork ? true : false)
     }
 }
@@ -120,12 +139,37 @@ const connection = (io, socket) => {
             learningCycles: io.learningCycles,
             upTime: getTimeMSFloat() - io.started,
             timestamp: socket.lastPoll,
-            models: io.storage.list(),
+            models: io.storage.list().map(one => {
+                const worker = io.workers.get(one)
+                const res = {
+                    name: one,
+                    worker: false
+                }
+                if (worker) {
+                    res.worker = {
+                        status: worker.getStatus(),
+                        active: worker.isActive()
+                    }
+                } else {
+                    const obj = io.storage.get(one)
+                    res.worker = {
+                        active: false,
+                        status: {
+                            result: obj.result,
+                            spec: obj.spec,
+                            counter: -1
+                        }
+                    }
+                }
+                return res
+            }),
             workers: io.workers.list().map(one => {
                 const worker = io.workers.get(one)
                 return {
                     model: one,
-                    id: worker.id
+                    id: worker.id,
+                    status: worker.getStatus(),
+                    active: worker.isActive()
                 }
             }),
             clients: Object.keys(io.sockets.sockets).reduce((result, key) => {
@@ -150,23 +194,34 @@ const connection = (io, socket) => {
         socket.lastPoll = getTimeMSFloat()
     }
 
+    const initWorker = name => {
+        if (io.workers.get(name)) {
+            console.log(colorText('green', 'Catch'), 'worker for ', name)
+            socket.worker = io.workers.get(name)
+        } else {
+            console.log(colorText('red', 'Create'), 'worker for ', name)
+            socket.worker = createWorker(socket)
+            io.workers.set(name, socket.worker)
+        }
+        socket.worker.setId(socket.connectionId)
+        socket.worker.addListener(id, msg => {
+            let cmd = {}
+            try {
+                cmd = JSON.parse(msg)
+            } catch (e) {
+                cmd = { cmd: 'null' }
+            }
+            arena.fromWorker(cmd)
+        })
+    }
+
     return {
         init: () => {
             id = Math.round(Math.random() * 10000000)
             socket.lastPoll = getTimeMSFloat()
             socket.sendCommand = sendCommand
             socket.connectionId = id
-            socket.worker = createWorker(socket)
-            socket.worker.setId(socket.connectionId)
-            socket.worker.setListener(msg => {
-                let cmd = {}
-                try {
-                    cmd = JSON.parse(msg)
-                } catch (e) {
-                    cmd = { cmd: 'null' }
-                }
-                arena.fromWorker(cmd)
-            })
+            socket.worker = false
             return id
         },
         disconnect: () => {
@@ -174,14 +229,10 @@ const connection = (io, socket) => {
                 return
             }
             const scene = arena.getScene()
-            if (socket.worker.isActive() && scene.modelName) {
-                arena.saveModel({ name: scene.modelName })
+            if (socket.worker) {
                 const worker = socket.worker
-                worker.setListener(() => null)
-                worker.setId(0)
-                io.workers.set(scene.modelName, worker)
+                worker.removeListener(socket.id)
             }
-            //socket.worker.stop()
         },
         execCommand: data => {
             var cmd = {}
@@ -220,20 +271,7 @@ const connection = (io, socket) => {
                         sendServerStatus()
                         break
                     case 'LOAD_AI':
-                        if (io.workers.get(cmd.name)) {
-                            console.log('Catch worker')
-                            socket.worker = io.workers.get(cmd.name)
-                            socket.worker.setId(socket.connectionId)
-                            socket.worker.setListener(msg => {
-                                let cmd = {}
-                                try {
-                                    cmd = JSON.parse(msg)
-                                } catch (e) {
-                                    cmd = { cmd: 'null' }
-                                }
-                                arena.fromWorker(cmd)
-                            })
-                        }
+                        initWorker(cmd.name)
                         arena.loadAI(cmd)
                         break
                     case 'STOP_GAME':
@@ -254,6 +292,20 @@ const connection = (io, socket) => {
                             sendModel(cmd.name)
                         }, 200)
                         break
+                    case 'CHANGE_STATUS':
+                        if (!cmd.status) {
+                            io.stopWorker(cmd.name)
+                        } else {
+                            io.capWorkers(cmd.modelName)
+                            setTimeout(() => {
+                                initWorker(cmd.name)
+                                const model = io.storage.get(cmd.name)
+                                model.name = cmd.name
+                                if (model) {
+                                    arena.loadAI(cmd)
+                                }
+                            }, 100)
+                        }
                 }
             } catch (e) {
                 console.log(e)
