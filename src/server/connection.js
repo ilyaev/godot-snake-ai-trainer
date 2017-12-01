@@ -7,9 +7,13 @@ const forkProcess = require('child_process').fork
 const createWorker = socket => {
     var fork = false
     var id = 0
+    var name = ''
 
     var send = obj => {
         if (fork) {
+            if (obj.cmd === 'learn') {
+                name = obj.modelName
+            }
             fork.send(JSON.stringify(obj))
         }
     }
@@ -69,6 +73,7 @@ const createWorker = socket => {
         setId: _id => {
             id = _id
         },
+        getName: () => name,
         getStatus: () => status,
         isActive: () => (fork ? true : false)
     }
@@ -195,6 +200,9 @@ const connection = (io, socket) => {
     }
 
     const initWorker = name => {
+        if (socket.worker) {
+            socket.worker.removeListener(id)
+        }
         if (io.workers.get(name)) {
             console.log(colorText('green', 'Catch'), 'worker for ', name)
             socket.worker = io.workers.get(name)
@@ -304,7 +312,7 @@ const connection = (io, socket) => {
                                 if (model) {
                                     arena.loadAI(cmd)
                                 }
-                            }, 100)
+                            }, 200)
                         }
                 }
             } catch (e) {

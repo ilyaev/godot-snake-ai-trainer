@@ -142,13 +142,21 @@ const arena = (io, socket) => {
         fromWorker: cmd => {
             switch (cmd.cmd) {
                 case 'sync':
-                    scene.agent.fromJSON(cmd.brain)
-                    saveModel()
-                    io.storage.flush(cmd.name)
+                    if (cmd.name !== scene.modelName) {
+                        console.log(colorText('red', 'Alert: Concurrent model save'))
+                    } else {
+                        scene.agent.fromJSON(cmd.brain)
+                        saveModel()
+                        io.storage.flush(cmd.name)
+                    }
                     break
                 case 'status':
-                    scene.result = cmd.result
-                    saveModel()
+                    if (cmd.name !== scene.modelName) {
+                        console.log(colorText('red', 'Alert: Concurrent model status'), cmd.name, scene.modelName)
+                    } else {
+                        scene.result = cmd.result
+                        saveModel()
+                    }
                     break
             }
         },
