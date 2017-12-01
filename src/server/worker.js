@@ -43,7 +43,8 @@ process.on('message', msg => {
             if (snake) {
                 send({
                     cmd: 'sync',
-                    brain: snake.scene.agent.toJSON()
+                    brain: snake.scene.agent.toJSON(),
+                    name: snake.scene.modelName
                 })
             }
             break
@@ -82,6 +83,7 @@ let startLearning = function(cmd) {
         mode: 'server'
     })
     snake.initScene()
+    snake.scene.modelName = modelName
     snake.scene.spec = cmd.spec
     snake.scene.params = cmd.params
     snake.scene.actor = cmd.actor
@@ -112,7 +114,8 @@ let finishLearning = function(cmd) {
     }
     send({
         cmd: 'sync',
-        brain: snake.scene.agent.toJSON()
+        brain: snake.scene.agent.toJSON(),
+        name: snake.scene.modelName
     })
     setTimeout(() => process.exit(42), 1000)
 }

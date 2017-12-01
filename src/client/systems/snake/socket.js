@@ -45,7 +45,8 @@ const socket = function(state) {
 
         rows.push('---Server: ' + cmd.status + ', UT: ' + Math.floor(cmd.upTime / 1000) + 's' + ', LS: ' + cmd.learningCycles)
         rows.push(
-            '---Models: ' + cmd.models.map(one => '<a style="color:#e1822d" href="#' + one + '" target="_blank">' + one + '</a>').join(', ')
+            '---Models: ' +
+                cmd.models.map(one => '<a style="color:#e1822d" href="#' + one.name + '" target="_blank">' + one.name + '</a>').join(', ')
         )
         rows.push('---Silent workers: ' + cmd.workers.map(one => one.model).join(', '))
         cmd.clients.forEach(one => {
@@ -79,16 +80,6 @@ const socket = function(state) {
                 serverInstanceId = cmd.serverInstanceId
             }
             if (cmd.code === 'STATUS') {
-                console.log(
-                    'Step: ',
-                    cmd.result.step,
-                    ' / WINS: ',
-                    cmd.result.wins,
-                    ' brain: ',
-                    JSON.stringify(cmd.brain).length,
-                    ' F: ',
-                    cmd.target
-                )
                 scene.agent = new DQNAgent(scene.env, scene.spec)
                 scene.agent.fromJSON(cmd.brain)
                 scene.agent.epsilon = 0.01

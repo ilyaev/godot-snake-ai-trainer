@@ -4,6 +4,10 @@ const R = require('./agent').R
 const clone = obj => JSON.parse(JSON.stringify(obj))
 const generateID = () => Math.round(Math.random() * 100000)
 
+const FEATURE_HEAD_COORDINATES = 1
+const FEATURE_CLOSEST_FOOD_DICRECTION = 2
+const FEATURE_TAIL_DIRECTION = 3
+
 const config = {
     id: 0,
     maxX: 7,
@@ -11,7 +15,10 @@ const config = {
     modelName: '',
     params: {
         numStates: 8,
-        numActions: 4
+        numActions: 4,
+        maxX: 7,
+        maxY: 7,
+        features: [FEATURE_HEAD_COORDINATES, FEATURE_CLOSEST_FOOD_DICRECTION, FEATURE_TAIL_DIRECTION]
     },
     spec: { alpha: 0.02, epsilon: 0.25, learning_steps_per_iteration: 40, experience_size: 10000, gamma: 0.75 },
     actor: {
@@ -115,7 +122,7 @@ module.exports = {
             scene.result.wins = 0
             scene.result.step = 0
 
-            calculateQvalue()
+            //calculateQvalue()
         }
 
         const restartActor = reward => {
@@ -124,7 +131,7 @@ module.exports = {
             }
             scene.actor = clone(scene.defaultActor)
             scene.actor.step = 0
-            calculateQvalue()
+            //calculateQvalue()
         }
 
         const respawnFood = () => {

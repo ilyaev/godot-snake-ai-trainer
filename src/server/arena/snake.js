@@ -106,8 +106,10 @@ const arena = (io, socket) => {
             {},
             {
                 arena: 'SNAKE',
+                version: io.storage.get(scene.modelName).version || 1,
                 spec: scene.spec,
                 name: scene.modelName,
+                modelName: scene.modelName,
                 result: scene.result,
                 maxX: scene.maxX,
                 maxY: scene.maxY,
@@ -142,9 +144,11 @@ const arena = (io, socket) => {
                 case 'sync':
                     scene.agent.fromJSON(cmd.brain)
                     saveModel()
+                    io.storage.flush(cmd.name)
                     break
                 case 'status':
                     scene.result = cmd.result
+                    saveModel()
                     break
             }
         },

@@ -15,14 +15,6 @@
         "postinstall": "webpack --progress --display-error-details && cp src/index.html dist/index.html && chmod 777 src/models"
     },
     "dependencies": {
-        "express": "^4.14.0",
-        "jsonfile": "^4.0.0",
-        "lodash": "^4.17.4",
-        "reinforcenode": "^1.0.1",
-        "socket.io": "^1.7.2",
-        "webpack": "^1.14.0",
-        "webpack-dev-middleware": "^1.9.0",
-        "webpack-hot-middleware": "^2.15.0",
         "babel-core": "^6.21.0",
         "babel-loader": "^6.2.10",
         "babel-plugin-add-module-exports": "^0.2.1",
@@ -34,7 +26,18 @@
         "babel-preset-stage-0": "^6.16.0",
         "babel-preset-stage-2": "^6.18.0",
         "dat-gui": "^0.5.0",
+        "dateformat": "^3.0.2",
+        "dotenv": "^4.0.0",
+        "express": "^4.14.0",
+        "jsonfile": "^4.0.0",
+        "lodash": "^4.17.4",
+        "mongodb": "^2.2.33",
         "p5": "^0.5.7",
-        "webpack-dev-server": "^1.16.2"
+        "reinforcenode": "^1.0.1",
+        "socket.io": "^1.7.2",
+        "webpack": "^1.14.0",
+        "webpack-dev-middleware": "^1.9.0",
+        "webpack-dev-server": "^1.16.2",
+        "webpack-hot-middleware": "^2.15.0"
     }
 }

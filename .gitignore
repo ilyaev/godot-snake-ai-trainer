@@ -2,3 +2,4 @@ node_modules
 dist/app/bundle*
 yarn.lock
 mongo-db
+.env

@@ -7,6 +7,7 @@ var jsonfile = require('jsonfile')
 const connections = {}
 
 const maxWorkers = 1
+const autoFlushMins = 30
 
 const setupConnection = (io, socket) => {
     var connection = connectionCreator(io, socket)
@@ -17,7 +18,7 @@ const setupConnection = (io, socket) => {
 }
 
 const restoreStorage = io => {
-    const models = ['second', 'third']
+    const models = ['second', 'third', 'fourth', 'fifth']
     models.forEach(one => {
         const fileName = __dirname.replace('server', 'models/' + one + '.json')
         jsonfile.readFile(fileName, (err, json) => {
@@ -57,12 +58,28 @@ const protocol = io => {
             io.instanceId = Math.round(Math.random() * 1000000)
             io.learningCycles = 0
             io.started = getNow()
-            io.storage = storageCreator()
+
+            io.storage = storageCreator({
+                persistent: true,
+                onConnected: () => {
+                    io.storage.restore()
+                }
+            })
+
             io.workers = storageCreator()
-            restoreStorage(io)
+
+            //restoreStorage(io)
 
             io.stopWorker = stopWorker(io)
             io.capWorkers = capWorkers(io)
+
+            setInterval(() => {
+                console.log('---AutoFlush All Active Models----')
+                io.storage
+                    .list()
+                    .filter(name => io.workers.get(name) && io.workers.get(name).isActive())
+                    .forEach(io.storage.flush)
+            }, autoFlushMins * 1000 * 60)
 
             io.sockets.on('connection', function(socket) {
                 var connection = setupConnection(io, socket)
