@@ -95,6 +95,13 @@ var storageCreator = (params = {}) => {
         },
         del: key => {
             delete store[key]
+        },
+        unlink: key => {
+            delete store[key]
+            if (params.persistent) {
+                console.log('MONGODB: Delete Model - ', key)
+                collection.deleteMany({ name: key })
+            }
         }
     }
 }

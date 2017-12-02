@@ -27,9 +27,42 @@ const initGameFromModel = (scene, model) => {
     scene.actor = Object.assign({}, JSON.parse(JSON.stringify(scene.defaultActor)))
 }
 
+const createGame = (scene, name) => {
+    if (scene.interval) {
+        clearImmediate(scene.interval)
+        scene.interval = false
+    }
+    scene.agent = new DQNAgent(
+        {
+            getNumStates: () => scene.params.numStates,
+            getMaxNumActions: () => scene.params.numActions
+        },
+        scene.spec
+    )
+    scene.result = {
+        step: 0,
+        wins: 0,
+        epoch: 0,
+        history: [
+            {
+                e: 0,
+                p: 0,
+                t: 0,
+                s: 0
+            }
+        ]
+    }
+    scene.reward = 0
+    scene.modelName = name
+    scene.aiName = name
+    scene.name = name
+    scene.history = []
+}
+
 const initGame = (scene, cmd, ai = false) => {
     if (scene.interval) {
         clearImmediate(scene.interval)
+        scene.interval = false
     }
     scene.agent = new DQNAgent(
         {
@@ -139,6 +172,12 @@ const arena = (io, socket) => {
                 cmd: 'finish'
             })
         },
+        createModel: name => {
+            createGame(scene, name)
+            saveModel()
+            io.storage.flush(name)
+            sendStatus(socket, scene)
+        },
         fromWorker: cmd => {
             switch (cmd.cmd) {
                 case 'sync':
@@ -182,6 +221,10 @@ const arena = (io, socket) => {
         },
         updateLearningScale: cmd => {
             scene.timeScale = cmd.value
+        },
+        updateModel: form => {
+            console.log('UPDATE MODEL!', form)
+            scene.agent.epsilon = form.epsilon
         },
         updateLearningSpec: cmd => {
             scene.spec = cmd.value

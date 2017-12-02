@@ -114,6 +114,24 @@ const connection = (io, socket) => {
     var id
     var arena
 
+    var deleteModel = name => {
+        io.storage.unlink(name)
+    }
+
+    var createModel = rawName => {
+        var name = rawName
+            .replace(/[^a-z0-9]/gi, '')
+            .substring(0, 15)
+            .trim()
+        if (io.storage.get(name)) {
+            sendCommand(socket, 'ERROR', {
+                error: 'Model [' + name + '] already exist'
+            })
+        } else {
+            arena.createModel(name)
+        }
+    }
+
     var sendModel = name => {
         const scene = Object.keys(io.sockets.sockets).reduce((result, key) => {
             const cur = io.sockets.sockets[key]
@@ -159,6 +177,8 @@ const connection = (io, socket) => {
                     const obj = io.storage.get(one)
                     res.worker = {
                         active: false,
+                        spec: obj.spec,
+                        params: obj.params,
                         status: {
                             result: obj.result,
                             spec: obj.spec,
@@ -267,11 +287,30 @@ const connection = (io, socket) => {
                     case 'LEARNING_SCALE':
                         arena.updateLearningScale(cmd)
                         break
+                    case 'UPDATE_MODEL':
+                        if (cmd.name) {
+                            //arena.updateModel(cmd.form)
+                            sendCommand(socket, 'ERROR', {
+                                error: 'Implementation is not ready'
+                            })
+                        }
+                        break
                     case 'LEARNING_SPEC':
                         arena.updateLearningSpec(cmd)
                         break
                     case 'DOWNLOAD_MODEL':
                         sendModel(cmd.name)
+                        break
+                    case 'DELETE_MODEL':
+                        if (cmd.name) {
+                            io.stopWorker(cmd.name)
+                            deleteModel(cmd.name)
+                        }
+                        break
+                    case 'CREATE_MODEL':
+                        if (cmd.name) {
+                            createModel(cmd.name)
+                        }
                         break
                     case 'CHANGE_STATUS':
                         if (!cmd.status) {
