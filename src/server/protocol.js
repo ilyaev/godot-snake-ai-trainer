@@ -7,7 +7,7 @@ var jsonfile = require('jsonfile')
 const connections = {}
 
 const maxWorkers = 1
-const autoFlushMins = 30
+const autoFlushMins = 60
 
 const setupConnection = (io, socket) => {
     var connection = connectionCreator(io, socket)

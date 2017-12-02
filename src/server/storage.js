@@ -23,7 +23,7 @@ var storageCreator = (params = {}) => {
             .then(mgdb => {
                 console.log('Connected to mongoDB')
                 db = mgdb
-                collection = db.collection('model')
+                collection = db.collection(process.env.MGDB_COLLECTION || 'model')
                 if (params.onConnected) {
                     params.onConnected()
                 }

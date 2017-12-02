@@ -168,32 +168,8 @@ const connection = (io, socket) => {
                 }
                 return res
             }),
-            workers: io.workers.list().map(one => {
-                const worker = io.workers.get(one)
-                return {
-                    model: one,
-                    id: worker.id,
-                    status: worker.getStatus(),
-                    active: worker.isActive()
-                }
-            }),
-            clients: Object.keys(io.sockets.sockets).reduce((result, key) => {
-                const cur = io.sockets.sockets[key]
-                const one = {
-                    key: key,
-                    id: cur.connectionId,
-                    arena: cur.arena
-                        ? {
-                              ai: cur.arena.getAiName(),
-                              status: cur.arena.getStatus(),
-                              result: cur.arena.getScene().result,
-                              spec: cur.arena.getScene().spec
-                          }
-                        : null
-                }
-                result.push(one)
-                return result
-            }, [])
+            workers: [],
+            clients: []
         })
 
         socket.lastPoll = getTimeMSFloat()
@@ -295,10 +271,7 @@ const connection = (io, socket) => {
                         arena.updateLearningSpec(cmd)
                         break
                     case 'DOWNLOAD_MODEL':
-                        socket.worker.command({ cmd: 'sync' })
-                        setTimeout(() => {
-                            sendModel(cmd.name)
-                        }, 200)
+                        sendModel(cmd.name)
                         break
                     case 'CHANGE_STATUS':
                         if (!cmd.status) {
@@ -314,6 +287,9 @@ const connection = (io, socket) => {
                                 }
                             }, 200)
                         }
+                        break
+                    default:
+                        throw new Error('Unknown Command: ' + JSON.stringify(cmd))
                 }
             } catch (e) {
                 console.log(e)

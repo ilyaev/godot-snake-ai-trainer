@@ -43,6 +43,7 @@ process.on('message', msg => {
             if (snake) {
                 send({
                     cmd: 'sync',
+                    save: false,
                     brain: snake.scene.agent.toJSON(),
                     name: snake.scene.modelName
                 })
@@ -114,6 +115,7 @@ let finishLearning = function(cmd) {
     }
     send({
         cmd: 'sync',
+        save: true,
         brain: snake.scene.agent.toJSON(),
         name: snake.scene.modelName
     })

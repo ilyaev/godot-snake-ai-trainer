@@ -147,7 +147,9 @@ const arena = (io, socket) => {
                     } else {
                         scene.agent.fromJSON(cmd.brain)
                         saveModel()
-                        io.storage.flush(cmd.name)
+                        if (cmd.save) {
+                            io.storage.flush(cmd.name)
+                        }
                     }
                     break
                 case 'status':

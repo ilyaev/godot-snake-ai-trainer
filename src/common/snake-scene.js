@@ -39,9 +39,19 @@ const config = {
     },
     result: {
         step: 0,
-        wins: 0
+        wins: 0,
+        epoch: 0,
+        history: [
+            {
+                e: 0,
+                p: 0,
+                t: 0,
+                s: 0
+            }
+        ]
     },
     qvalues: {},
+    history: [],
     agent: null
 }
 
@@ -105,6 +115,7 @@ module.exports = {
             }
             scene.agent = new DQNAgent(scene.env, scene.spec)
             scene.defaultActor = clone(scene.actor)
+            scene.defaultResult = clone(scene.result)
 
             for (var x = 0; x <= scene.maxX; x++) {
                 if (!scene.qvalues[x]) {
@@ -121,15 +132,56 @@ module.exports = {
 
             scene.result.wins = 0
             scene.result.step = 0
+            scene.result.epoch = 0
 
             //calculateQvalue()
+        }
+
+        const calculateAverage = period => {
+            const res = scene.history.slice(-period).reduce(
+                (result, next) => {
+                    result.sumTail += next.size
+                    result.sumSteps += next.step
+                    result.epoch = next.epoch
+                    return result
+                },
+                {
+                    sumTail: 0,
+                    sumSteps: 0,
+                    epoch: 0
+                }
+            )
+            if (!scene.result.history) {
+                scene.result.history = {}
+            }
+            if (!scene.result.history[period]) {
+                scene.result.history[period] = []
+            }
+            scene.result.history[period].push({
+                e: res.epoch,
+                p: period,
+                t: Math.round(res.sumTail / period),
+                s: Math.round(res.sumSteps / period)
+            })
+            scene.result.history[period] = scene.result.history[period].splice(-100)
         }
 
         const restartActor = reward => {
             if (reward > 0) {
                 respawnFood()
             }
+            scene.history.push({
+                size: scene.actor.tail.length,
+                step: scene.actor.step,
+                epoch: scene.result.epoch
+            })
+            scene.history = scene.history.splice(-1000)
             scene.actor = clone(scene.defaultActor)
+            if (!scene.result.epoch) {
+                scene.result.epoch = 0
+            }
+            ;[10, 100, 1000].forEach(period => (scene.result.epoch % period === 0 ? calculateAverage(period) : null))
+            scene.result.epoch += 1
             scene.actor.step = 0
             //calculateQvalue()
         }
@@ -181,7 +233,10 @@ module.exports = {
 
         const nextStep = () => {
             buildWalls()
+
             scene.result.step++
+            scene.actor.step += 1
+
             var footer = ''
             var prev = clone({
                 x: scene.actor.x,
@@ -228,7 +283,6 @@ module.exports = {
 
             scene.actor.x = scene.actor.x + act.dx
             scene.actor.y = scene.actor.y + act.dy
-            scene.actor.step += 1
 
             if (scene.actor.x == scene.target.x && scene.actor.y == scene.target.y) {
                 growSnake()

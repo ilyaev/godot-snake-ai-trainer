@@ -33,6 +33,7 @@
         "lodash": "^4.17.4",
         "mongodb": "^2.2.33",
         "p5": "^0.5.7",
+        "react-trend": "^1.2.4",
         "reinforcenode": "^1.0.1",
         "socket.io": "^1.7.2",
         "webpack": "^1.14.0",
