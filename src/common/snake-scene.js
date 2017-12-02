@@ -143,14 +143,19 @@ module.exports = {
                     result.sumTail += next.size
                     result.sumSteps += next.step
                     result.epoch = next.epoch
+                    result.maxTail = next.size > result.maxTail ? next.size : result.maxTail
+                    result.maxSteps = Math.max(next.maxSteps, result.maxSteps)
                     return result
                 },
                 {
                     sumTail: 0,
                     sumSteps: 0,
+                    maxTail: 0,
+                    maxSteps: 0,
                     epoch: 0
                 }
             )
+
             if (!scene.result.history) {
                 scene.result.history = {}
             }
@@ -160,8 +165,10 @@ module.exports = {
             scene.result.history[period].push({
                 e: res.epoch,
                 p: period,
-                t: Math.round(res.sumTail / period),
-                s: Math.round(res.sumSteps / period)
+                t: res.maxTail,
+                s: res.maxSteps
+                // t: Math.round(res.sumTail / period),
+                // s: Math.round(res.sumSteps / period)
             })
             scene.result.history[period] = scene.result.history[period].splice(-100)
         }
