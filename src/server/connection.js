@@ -162,6 +162,7 @@ const connection = (io, socket) => {
             learningCycles: io.learningCycles,
             upTime: getTimeMSFloat() - io.started,
             timestamp: socket.lastPoll,
+            connections: Object.keys(io.sockets.sockets).length,
             models: io.storage.list().map(one => {
                 const worker = io.workers.get(one)
                 const res = {
@@ -189,7 +190,22 @@ const connection = (io, socket) => {
                 return res
             }),
             workers: [],
-            clients: []
+            clients: Object.keys(io.sockets.sockets).reduce((result, key) => {
+                const cur = io.sockets.sockets[key]
+                const one = {
+                    key: key,
+                    id: cur.connectionId,
+                    arena: cur.arena
+                        ? {
+                              ai: cur.arena.getAiName(),
+                              status: cur.arena.getStatus(),
+                              spec: cur.arena.getScene().spec
+                          }
+                        : null
+                }
+                result.push(one)
+                return result
+            }, [])
         })
 
         socket.lastPoll = getTimeMSFloat()
@@ -317,10 +333,14 @@ const connection = (io, socket) => {
                         }
                         break
                     case 'CREATE_MODEL':
-                        if (cmd.name) {
-                            createModel(cmd.name)
+                        if (io.storage.list().length >= 10) {
+                            sendCommand(socket, 'ERROR', { error: 'Maximum models count reached. Delete some' })
                         } else {
-                            sendCommand(socket, 'ERROR', { error: "Model name is empty. I can't" })
+                            if (cmd.name) {
+                                createModel(cmd.name)
+                            } else {
+                                sendCommand(socket, 'ERROR', { error: "Model name is empty. I can't" })
+                            }
                         }
                         break
                     case 'CHANGE_STATUS':
