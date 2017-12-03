@@ -289,10 +289,19 @@ const connection = (io, socket) => {
                         break
                     case 'UPDATE_MODEL':
                         if (cmd.name) {
-                            //arena.updateModel(cmd.form)
-                            sendCommand(socket, 'ERROR', {
-                                error: 'Implementation is not ready'
-                            })
+                            if (cmd.name !== arena.getScene().modelName) {
+                                console.log('Offlien update model: ', cmd.name, cmd.form)
+                                const model = io.storage.get(cmd.name)
+                                if (model) {
+                                    model.spec = Object.assign({}, model.spec, cmd.form)
+                                    io.storage.set(cmd.name, model)
+                                    io.storage.flush(cmd.name)
+                                }
+                            } else {
+                                console.log('Online updat emodel: ', cmd.name)
+                                arena.updateModel(cmd.form)
+                                io.storage.flush(cmd.name)
+                            }
                         }
                         break
                     case 'LEARNING_SPEC':
@@ -310,6 +319,8 @@ const connection = (io, socket) => {
                     case 'CREATE_MODEL':
                         if (cmd.name) {
                             createModel(cmd.name)
+                        } else {
+                            sendCommand(socket, 'ERROR', { error: "Model name is empty. I can't" })
                         }
                         break
                     case 'CHANGE_STATUS':

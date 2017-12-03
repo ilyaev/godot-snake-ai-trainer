@@ -48,24 +48,24 @@ const socket = function(state) {
             '---Models: ' +
                 cmd.models.map(one => '<a style="color:#e1822d" href="#' + one.name + '" target="_blank">' + one.name + '</a>').join(', ')
         )
-        rows.push('---Silent workers: ' + cmd.workers.map(one => one.model).join(', '))
-        cmd.clients.forEach(one => {
-            if (one.id == connectionId) {
-                my = one
-            }
-            let row = []
-            row.push(one.id)
-            if (one.arena) {
-                row.push(one.arena.ai)
-                row.push(one.arena.status)
-                row.push('Steps: ' + one.arena.result.step)
-                row.push('Goals: ' + one.arena.result.wins)
-                row.push('E: ' + Math.round(one.arena.spec.epsilon * 1000) / 1000)
-            }
-            other.push(row.join(', '))
-        })
+        // rows.push('---Silent workers: ' + cmd.workers.map(one => one.model).join(', '))
+        // cmd.clients.forEach(one => {
+        //     if (one.id == connectionId) {
+        //         my = one
+        //     }
+        //     let row = []
+        //     row.push(one.id)
+        //     if (one.arena) {
+        //         row.push(one.arena.ai)
+        //         row.push(one.arena.status)
+        //         row.push('Steps: ' + one.arena.result.step)
+        //         row.push('Goals: ' + one.arena.result.wins)
+        //         row.push('E: ' + Math.round(one.arena.spec.epsilon * 1000) / 1000)
+        //     }
+        //     other.push(row.join(', '))
+        // })
 
-        rows.push('---My Connection ' + my.id)
+        //rows.push('---My Connection ' + my.id)
         rows.push('---All Clients: ' + cmd.clients.length)
 
         dashboard.set(rows.concat(other).join('<br>'))

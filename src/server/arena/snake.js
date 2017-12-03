@@ -105,7 +105,7 @@ const arena = (io, socket) => {
 
     var status = 'IDLE'
 
-    const startLearning = () => {
+    const startLearning = (start = true) => {
         if (!socket.worker) {
             return
         }
@@ -120,6 +120,7 @@ const arena = (io, socket) => {
             spec: scene.spec,
             actor: scene.actor,
             result: scene.result,
+            start: start,
             modelName: scene.modelName
         })
     }
@@ -201,7 +202,7 @@ const arena = (io, socket) => {
                     break
             }
         },
-        loadAI: cmd => {
+        loadAI: (cmd, start = true) => {
             scene.aiName = cmd.name
             scene.modelName = cmd.name
             const model = io.storage.get(cmd.name)
@@ -216,15 +217,17 @@ const arena = (io, socket) => {
             }
 
             scene.modelName = cmd.name
-            startLearning()
+            startLearning(start)
             sendStatus(socket, scene)
         },
         updateLearningScale: cmd => {
             scene.timeScale = cmd.value
         },
+
         updateModel: form => {
-            console.log('UPDATE MODEL!', form)
-            scene.agent.epsilon = form.epsilon
+            scene.spec = Object.assign({}, scene.spec, form)
+            updateLearningSpec(scene.spec)
+            saveModel()
         },
         updateLearningSpec: cmd => {
             scene.spec = cmd.value

@@ -57,7 +57,7 @@ process.on('message', msg => {
 })
 
 let updateSpec = function(cmd) {
-    log('update spec ' + JSON.stringify(cmd))
+    log('update spec for ' + modelName + ' / ' + JSON.stringify(cmd))
     snake.scene.spec = cmd.value
     snake.scene.agent.epsilon = cmd.value.epsilon
     snake.scene.agent.alpha = cmd.value.alpha
@@ -95,8 +95,10 @@ let startLearning = function(cmd) {
     snake.scene.agent.gamma = cmd.spec.gamma
     snake.scene.maxX = cmd.maxX
     snake.scene.maxY = cmd.maxY
-    log('Learning Started - ' + snake.scene.agent.epsilon)
-    run()
+    if (cmd.start) {
+        log('Learning Started - ' + snake.scene.agent.epsilon)
+        run()
+    }
 }
 
 let run = function() {
