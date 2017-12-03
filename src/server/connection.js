@@ -169,7 +169,7 @@ const connection = (io, socket) => {
                     name: one,
                     worker: false
                 }
-                if (worker) {
+                if (worker && worker.isActive()) {
                     res.worker = {
                         status: worker.getStatus(),
                         active: worker.isActive()
@@ -281,6 +281,15 @@ const connection = (io, socket) => {
                 }
 
                 switch (code) {
+                    case 'LOAD_MODEL':
+                        const model = io.storage.get(cmd.model)
+                        if (!model) {
+                            sendCommand(socket, 'ERROR', { error: 'Model not found: ' + cmd.model })
+                            sendCommand(socket, 'LOAD_MODEL', { success: false, error: 'NOT_FOUND' })
+                        } else {
+                            sendCommand(socket, 'LOAD_MODEL', { success: true, model: model })
+                        }
+                        break
                     case 'START':
                         arena.initGame(cmd)
                         break

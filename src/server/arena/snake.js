@@ -1,7 +1,6 @@
 var fs = require('fs')
 const DQNAgent = require('reinforcenode').DQNAgent
 const colorText = require('../debug').colorText
-var jsonfile = require('jsonfile')
 
 const initGameFromModel = (scene, model) => {
     if (scene.interval) {
@@ -126,13 +125,13 @@ const arena = (io, socket) => {
     }
 
     const updateLearningSpec = spec => {
-        if (!socket.worker) {
-            return
+        let worker = socket.worker || io.workers.get(scene.modelName)
+        if (worker) {
+            worker.command({
+                cmd: 'spec',
+                value: spec
+            })
         }
-        socket.worker.command({
-            cmd: 'spec',
-            value: spec
-        })
     }
 
     const saveModel = () => {
