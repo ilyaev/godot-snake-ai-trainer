@@ -82,8 +82,7 @@ const socket = function(state) {
             if (cmd.code === 'STATUS') {
                 scene.agent = new DQNAgent(scene.env, scene.spec)
                 scene.agent.fromJSON(cmd.brain)
-                scene.agent.epsilon = 0.01
-                state.snake.calculateQvalue()
+                scene.agent.epsilon = 0.001
 
                 if (wins != cmd.result.wins) {
                     fromLastWin = performance.now()

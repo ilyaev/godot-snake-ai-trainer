@@ -9,6 +9,7 @@ const FEATURE_CLOSEST_FOOD_DICRECTION = 2
 const FEATURE_TAIL_DIRECTION = 3
 const FEATURE_VISION_CLOSE_RANGE = 4
 const FEATURE_VISION_FAR_RANGE = 5
+const FEATURE_VISION_MID_RANGE = 6
 
 const binmap = [1, 2, 4, 8, 16, 32, 64, 128]
 
@@ -27,6 +28,9 @@ const featureMap = {
     },
     [FEATURE_VISION_FAR_RANGE]: {
         inputs: 8
+    },
+    [FEATURE_VISION_MID_RANGE]: {
+        inputs: 16
     }
 }
 
@@ -247,6 +251,17 @@ module.exports = {
             scene.actor.tail.forEach(one => (walls[one.x][one.y] = true))
         }
 
+        const buildMidRangeVision = () => {
+            const rows = []
+            for (var dx = -2; dx < 2; dx++) {
+                for (var dy = -2; dy < 2; dy++) {
+                    const value = isWall(scene.actor.x + dx, scene.actor.y + dy) ? 1 : 0
+                    rows.push(value)
+                }
+            }
+            return rows
+        }
+
         const buildFarVision = () => {
             const rows = []
             for (var dx = -4; dx < 4; dx++) {
@@ -285,6 +300,9 @@ module.exports = {
                         break
                     case FEATURE_VISION_FAR_RANGE:
                         result = result.concat(buildFarVision())
+                        break
+                    case FEATURE_VISION_MID_RANGE:
+                        result = result.concat(buildMidRangeVision())
                         break
                     default:
                         break
