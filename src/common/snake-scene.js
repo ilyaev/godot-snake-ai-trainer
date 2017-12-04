@@ -204,6 +204,9 @@ module.exports = {
             ;[10, 100, 1000].forEach(period => (scene.result.epoch % period === 0 ? calculateAverage(period) : null))
             scene.result.epoch += 1
             scene.actor.step = 0
+            if (isWall(scene.target.x, scene.target.y)) {
+                respawnFood()
+            }
         }
 
         const respawnFood = () => {
@@ -330,12 +333,22 @@ module.exports = {
 
             scene.actor.x = scene.actor.x + act.dx
             scene.actor.y = scene.actor.y + act.dy
+            var toRespawn = false
 
             if (scene.actor.x == scene.target.x && scene.actor.y == scene.target.y) {
                 growSnake()
-                respawnFood()
+                toRespawn = true
                 if (instanceProps.mode === 'server') {
-                    scene.agent.learn(1)
+                    const availActions = actions.reduce((result, next) => {
+                        return isWall(scene.actor.x + next.dx, scene.actor.y + next.dy) ? result : result + 1
+                    }, 0)
+                    if (availActions > 0) {
+                        scene.agent.learn(1)
+                    } else {
+                        restartActor(-1)
+                        scene.agent.learn(-2)
+                        return
+                    }
                 }
             } else if (isWall(scene.actor.x, scene.actor.y)) {
                 footer = 'WALL'
@@ -366,6 +379,10 @@ module.exports = {
                 }
                 return one
             })
+
+            if (toRespawn) {
+                respawnFood()
+            }
         }
 
         const printField = () => {
