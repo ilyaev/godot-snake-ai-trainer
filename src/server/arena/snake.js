@@ -205,6 +205,16 @@ const arena = (io, socket) => {
                         saveModel()
                     }
                     break
+                case 'brain':
+                    if (cmd.name !== scene.modelName) {
+                        console.log(colorText('red', 'Alert: Concurrent model status'), cmd.name, scene.modelName)
+                    } else {
+                        if (cmd.brain) {
+                            scene.agent.fromJSON(cmd.brain)
+                            saveModel()
+                        }
+                    }
+                    break
             }
         },
         loadAI: (cmd, start = true) => {

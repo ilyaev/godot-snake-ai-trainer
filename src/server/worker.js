@@ -125,5 +125,16 @@ let finishLearning = function(cmd) {
 }
 
 ticker = setInterval(() => {
-    send({ cmd: 'status', counter: counter, name: snake.scene.modelName, result: snake.scene.result, spec: snake.scene.spec })
+    send({
+        cmd: 'status',
+        counter: counter,
+        name: snake.scene.modelName,
+        result: snake.scene.result,
+        spec: snake.scene.spec
+    })
+    send({
+        cmd: 'brain',
+        name: snake.scene.modelName,
+        brain: snake.scene.agent.toJSON()
+    })
 }, 1000)

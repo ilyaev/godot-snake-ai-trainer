@@ -8,6 +8,9 @@ const FEATURE_HEAD_COORDINATES = 1
 const FEATURE_CLOSEST_FOOD_DICRECTION = 2
 const FEATURE_TAIL_DIRECTION = 3
 const FEATURE_VISION_CLOSE_RANGE = 4
+const FEATURE_VISION_FAR_RANGE = 5
+
+const binmap = [1, 2, 4, 8, 16, 32, 64, 128]
 
 const featureMap = {
     [FEATURE_HEAD_COORDINATES]: {
@@ -21,6 +24,9 @@ const featureMap = {
     },
     [FEATURE_VISION_CLOSE_RANGE]: {
         inputs: 4
+    },
+    [FEATURE_VISION_FAR_RANGE]: {
+        inputs: 8
     }
 }
 
@@ -115,7 +121,6 @@ module.exports = {
             scene.params.numStates = calculateMaxNumInputs(scene.params.features || [])
             scene.env = {
                 getNumStates: function() {
-                    console.log('params - ', scene.params)
                     return scene.params.numStates
                 },
                 getMaxNumActions: function() {
@@ -242,8 +247,25 @@ module.exports = {
             scene.actor.tail.forEach(one => (walls[one.x][one.y] = true))
         }
 
+        const buildFarVision = () => {
+            const rows = []
+            for (var dx = -4; dx < 4; dx++) {
+                let row = []
+                let sum = 0
+                for (var dy = -4; dy < 4; dy++) {
+                    const value = isWall(scene.actor.x + dx, scene.actor.y + dy) ? 1 : 0
+                    row.push(value)
+                    if (value) {
+                        sum += binmap[row.length - 1]
+                    }
+                }
+                rows.push(sum)
+            }
+            return rows.map(one => one / 256)
+        }
+
         const buildState = () => {
-            const result = []
+            let result = []
             scene.params.features.map(one => parseInt(one)).forEach(feature => {
                 switch (feature) {
                     case FEATURE_HEAD_COORDINATES:
@@ -260,6 +282,9 @@ module.exports = {
                     case FEATURE_TAIL_DIRECTION:
                         result.push((scene.actor.tail[scene.actor.tail.length - 1].x - scene.actor.x) / scene.maxX)
                         result.push((scene.actor.tail[scene.actor.tail.length - 1].y - scene.actor.y) / scene.maxY)
+                        break
+                    case FEATURE_VISION_FAR_RANGE:
+                        result = result.concat(buildFarVision())
                         break
                     default:
                         break
@@ -279,17 +304,6 @@ module.exports = {
                 x: scene.actor.x,
                 y: scene.actor.y
             })
-
-            // var stepState = [
-            //     scene.actor.x / scene.maxX,
-            //     scene.actor.y / scene.maxY,
-            //     (scene.target.x - scene.actor.x) / scene.maxX,
-            //     (scene.target.y - scene.actor.y) / scene.maxY,
-            //     isFutureWall(0),
-            //     isFutureWall(1),
-            //     isFutureWall(2),
-            //     isFutureWall(3)
-            // ]
 
             const stepState = buildState()
 
