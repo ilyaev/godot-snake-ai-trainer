@@ -118,7 +118,7 @@ const connection = (io, socket) => {
         io.storage.unlink(name)
     }
 
-    var createModel = rawName => {
+    var createModel = (rawName, params) => {
         var name = rawName
             .replace(/[^a-z0-9]/gi, '')
             .substring(0, 15)
@@ -128,7 +128,7 @@ const connection = (io, socket) => {
                 error: 'Model [' + name + '] already exist'
             })
         } else {
-            arena.createModel(name)
+            arena.createModel(name, params)
         }
     }
 
@@ -171,6 +171,7 @@ const connection = (io, socket) => {
                 }
                 if (worker && worker.isActive()) {
                     res.worker = {
+                        params: io.storage.get(one).params,
                         status: worker.getStatus(),
                         active: worker.isActive()
                     }
@@ -345,10 +346,10 @@ const connection = (io, socket) => {
                         if (io.storage.list().length >= 10) {
                             sendCommand(socket, 'ERROR', { error: 'Maximum models count reached. Delete some' })
                         } else {
-                            if (cmd.name) {
-                                createModel(cmd.name)
+                            if (cmd.name && cmd.features.length > 0) {
+                                createModel(cmd.name, cmd)
                             } else {
-                                sendCommand(socket, 'ERROR', { error: "Model name is empty. I can't" })
+                                sendCommand(socket, 'ERROR', { error: "Model name or features is empty. I can't" })
                             }
                         }
                         break

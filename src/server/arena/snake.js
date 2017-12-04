@@ -2,17 +2,18 @@ var fs = require('fs')
 const DQNAgent = require('reinforcenode').DQNAgent
 const colorText = require('../debug').colorText
 
-const initGameFromModel = (scene, model) => {
+const initGameFromModel = (scene, model, state) => {
     if (scene.interval) {
         clearImmediate(scene.interval)
     }
     scene.agent = new DQNAgent(
         {
-            getNumStates: () => model.params.numStates,
+            getNumStates: () => (model.params.features ? state.calculateMaxNumInputs(model.params.features) : model.params.numStates),
             getMaxNumActions: () => model.params.numActions
         },
         model.spec
     )
+    scene.params = model.params
     scene.agent.fromJSON(model.brain)
     scene.result = model.result
     scene.reward = 0
@@ -26,10 +27,15 @@ const initGameFromModel = (scene, model) => {
     scene.actor = Object.assign({}, JSON.parse(JSON.stringify(scene.defaultActor)))
 }
 
-const createGame = (scene, name) => {
+const createGame = (scene, name, state, params) => {
     if (scene.interval) {
         clearImmediate(scene.interval)
         scene.interval = false
+    }
+    if (params.features) {
+        console.log('--features: ', params.features)
+        scene.params.features = params.features
+        scene.params.numStates = state.calculateMaxNumInputs(scene.params.features)
     }
     scene.agent = new DQNAgent(
         {
@@ -172,8 +178,8 @@ const arena = (io, socket) => {
                 cmd: 'finish'
             })
         },
-        createModel: name => {
-            createGame(scene, name)
+        createModel: (name, params) => {
+            createGame(scene, name, state, params)
             saveModel()
             io.storage.flush(name)
             sendStatus(socket, scene)
@@ -208,7 +214,7 @@ const arena = (io, socket) => {
 
             if (model) {
                 console.log(colorText('green', '-load existing'), colorText('navy', cmd.name))
-                initGameFromModel(scene, model)
+                initGameFromModel(scene, model, state)
             } else {
                 console.log(colorText('red', '-start new'), colorText('navy', cmd.name))
                 initGame(scene, cmd)
