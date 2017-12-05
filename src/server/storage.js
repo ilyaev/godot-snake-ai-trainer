@@ -52,6 +52,7 @@ var storageCreator = (params = {}) => {
                         docs.filter(doc => doc.name && doc._id && doc.model).forEach(doc => {
                             store[doc.name] = JSON.parse(doc.model)
                             store[doc.name].version = doc.version
+                            store[doc.name].archive = doc.archive ? true : false
                             store[doc.name].id = doc._id
                         })
                         resolve(true)
@@ -76,6 +77,7 @@ var storageCreator = (params = {}) => {
                         (record = {
                             name: model.modelName,
                             version: model.version,
+                            archive: model.archive ? true : false,
                             lastUpdated: dateFormat(new Date(), 'dddd, mmmm dS, yyyy, h:MM:ss TT'),
                             timestamp: Date.now(),
                             model: JSON.stringify(model)
@@ -89,6 +91,13 @@ var storageCreator = (params = {}) => {
         },
         set: (key, value) => {
             store[key] = value
+        },
+        archive: (key, archive = true) => {
+            if (store[key]) {
+                store[key].archive = archive
+                return true
+            }
+            return false
         },
         get: key => {
             return store[key] ? store[key] : false

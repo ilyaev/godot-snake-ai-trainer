@@ -156,40 +156,44 @@ const connection = (io, socket) => {
         }
     }
 
-    var sendServerStatus = () => {
+    var sendServerStatus = (archived = false) => {
         sendCommand(socket, 'SERVER_STATUS', {
             status: 'OK',
             learningCycles: io.learningCycles,
             upTime: getTimeMSFloat() - io.started,
             timestamp: socket.lastPoll,
             connections: Object.keys(io.sockets.sockets).length,
-            models: io.storage.list().map(one => {
-                const worker = io.workers.get(one)
-                const res = {
-                    name: one,
-                    worker: false
-                }
-                if (worker && worker.isActive()) {
-                    res.worker = {
-                        params: io.storage.get(one).params,
-                        status: worker.getStatus(),
-                        active: worker.isActive()
+            models: io.storage
+                .list()
+                .filter(one => io.storage.get(one).archive === archived)
+                .map(one => {
+                    const worker = io.workers.get(one)
+                    const res = {
+                        name: one,
+                        archive: io.storage.get(one).archive,
+                        worker: false
                     }
-                } else {
-                    const obj = io.storage.get(one)
-                    res.worker = {
-                        active: false,
-                        spec: obj.spec,
-                        params: obj.params,
-                        status: {
-                            result: obj.result,
+                    if (worker && worker.isActive()) {
+                        res.worker = {
+                            params: io.storage.get(one).params,
+                            status: worker.getStatus(),
+                            active: worker.isActive()
+                        }
+                    } else {
+                        const obj = io.storage.get(one)
+                        res.worker = {
+                            active: false,
                             spec: obj.spec,
-                            counter: -1
+                            params: obj.params,
+                            status: {
+                                result: obj.result,
+                                spec: obj.spec,
+                                counter: -1
+                            }
                         }
                     }
-                }
-                return res
-            }),
+                    return res
+                }),
             workers: [],
             clients: Object.keys(io.sockets.sockets).reduce((result, key) => {
                 const cur = io.sockets.sockets[key]
@@ -298,7 +302,7 @@ const connection = (io, socket) => {
                         arena.sendStatus()
                         break
                     case 'SERVER_STATUS':
-                        sendServerStatus()
+                        sendServerStatus(cmd.archive)
                         break
                     case 'LOAD_AI':
                         initWorker(cmd.name)
@@ -312,6 +316,12 @@ const connection = (io, socket) => {
                         break
                     case 'LEARNING_SCALE':
                         arena.updateLearningScale(cmd)
+                        break
+                    case 'ARCHIVE_MODEL':
+                        const result = io.storage.archive(cmd.name, cmd.archive)
+                        io.storage.flush(cmd.name)
+                        sendServerStatus()
+                        sendCommand(socket, cmd.await || 'ARCHIVE_MODEL_RESPONSE', { result })
                         break
                     case 'UPDATE_MODEL':
                         if (cmd.name) {
