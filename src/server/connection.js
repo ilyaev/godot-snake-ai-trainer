@@ -369,8 +369,8 @@ const connection = (io, socket) => {
                         } else {
                             io.capWorkers(cmd.modelName)
                             setTimeout(() => {
-                                initWorker(cmd.name)
                                 const model = io.storage.get(cmd.name)
+                                initWorker(cmd.name)
                                 model.name = cmd.name
                                 if (model) {
                                     arena.loadAI(cmd)

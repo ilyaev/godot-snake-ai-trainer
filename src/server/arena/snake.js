@@ -146,6 +146,7 @@ const arena = (io, socket) => {
             {
                 arena: 'SNAKE',
                 version: io.storage.get(scene.modelName).version || 1,
+                archive: io.storage.get(scene.modelName).archive || false,
                 spec: scene.spec,
                 name: scene.modelName,
                 modelName: scene.modelName,
