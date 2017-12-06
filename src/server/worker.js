@@ -75,7 +75,7 @@ let handshake = function(cmd) {
 let startLearning = function(cmd) {
     log('MODELS ' + modelName + ' - ' + cmd.modelName)
     if (cmd.modelName && cmd.modelName === modelName) {
-        log('Already leraning model ' + cmd.modelName)
+        log('Already learning model ' + cmd.modelName)
         return
     }
     modelName = cmd.modelName
@@ -94,7 +94,8 @@ let startLearning = function(cmd) {
     snake.scene.params = cmd.params
     snake.scene.actor = cmd.actor
     snake.scene.result = cmd.result
-    snake.scene.agent.fromJSON(cmd.brain)
+    snake.implantBrain(cmd.brain)
+    //snake.scene.agent.fromJSON(cmd.brain)
     snake.scene.agent.epsilon = cmd.spec.epsilon
     snake.scene.agent.alpha = cmd.spec.alpha
     snake.scene.agent.gamma = cmd.spec.gamma

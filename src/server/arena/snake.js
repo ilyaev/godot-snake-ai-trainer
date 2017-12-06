@@ -1,20 +1,28 @@
 var fs = require('fs')
-const DQNAgent = require('reinforcenode').DQNAgent
+//const DQNAgent = require('reinforcenode').DQNAgent
 const colorText = require('../debug').colorText
 
 const initGameFromModel = (scene, model, state) => {
     if (scene.interval) {
         clearImmediate(scene.interval)
     }
-    scene.agent = new DQNAgent(
+    state.initAgents(
         {
             getNumStates: () => (model.params.features ? state.calculateMaxNumInputs(model.params.features) : model.params.numStates),
             getMaxNumActions: () => model.params.numActions
         },
         model.spec
     )
+    // scene.agent = new DQNAgent(
+    //     {
+    //         getNumStates: () => (model.params.features ? state.calculateMaxNumInputs(model.params.features) : model.params.numStates),
+    //         getMaxNumActions: () => model.params.numActions
+    //     },
+    //     model.spec
+    // )
     scene.params = model.params
-    scene.agent.fromJSON(model.brain)
+    //scene.agent.fromJSON(model.brain)
+    state.implantBrain(model.brain)
     scene.result = model.result
     scene.reward = 0
     scene.maxX = model.params.maxX
@@ -40,13 +48,20 @@ const createGame = (scene, name, state, params) => {
         scene.params.features = params.features
         scene.params.numStates = state.calculateMaxNumInputs(scene.params.features)
     }
-    scene.agent = new DQNAgent(
+    state.initAgents(
         {
             getNumStates: () => scene.params.numStates,
             getMaxNumActions: () => scene.params.numActions
         },
         scene.spec
     )
+    // scene.agent = new DQNAgent(
+    //     {
+    //         getNumStates: () => scene.params.numStates,
+    //         getMaxNumActions: () => scene.params.numActions
+    //     },
+    //     scene.spec
+    // )
     scene.result = {
         step: 0,
         wins: 0,
@@ -67,18 +82,25 @@ const createGame = (scene, name, state, params) => {
     scene.history = []
 }
 
-const initGame = (scene, cmd, ai = false) => {
+const initGame = (scene, cmd, ai, state) => {
     if (scene.interval) {
         clearImmediate(scene.interval)
         scene.interval = false
     }
-    scene.agent = new DQNAgent(
+    state.initAgents(
         {
             getNumStates: () => scene.params.numStates,
             getMaxNumActions: () => scene.params.numActions
         },
         cmd.spec
     )
+    // scene.agent = new DQNAgent(
+    //     {
+    //         getNumStates: () => scene.params.numStates,
+    //         getMaxNumActions: () => scene.params.numActions
+    //     },
+    //     cmd.spec
+    // )
     scene.result = {
         step: 0,
         wins: 0
@@ -168,7 +190,7 @@ const arena = (io, socket) => {
 
     return {
         initGame: cmd => {
-            initGame(scene, cmd)
+            initGame(scene, cmd, false, state)
         },
         sendStatus: () => {
             return sendStatus(socket, scene)
@@ -194,7 +216,8 @@ const arena = (io, socket) => {
                     if (cmd.name !== scene.modelName) {
                         console.log(colorText('red', 'Alert: Concurrent model save'))
                     } else {
-                        scene.agent.fromJSON(cmd.brain)
+                        //scene.agent.fromJSON(cmd.brain)
+                        state.implantBrain(cmd.brain)
                         saveModel()
                         if (cmd.save) {
                             io.storage.flush(cmd.name)
@@ -214,7 +237,8 @@ const arena = (io, socket) => {
                         console.log(colorText('red', 'Alert: Concurrent model status'), cmd.name, scene.modelName)
                     } else {
                         if (cmd.brain) {
-                            scene.agent.fromJSON(cmd.brain)
+                            state.implantBrain(cmd.brain)
+                            //scene.agent.fromJSON(cmd.brain)
                             saveModel()
                         }
                     }
@@ -231,7 +255,7 @@ const arena = (io, socket) => {
                 initGameFromModel(scene, model, state)
             } else {
                 console.log(colorText('red', '-start new'), colorText('navy', cmd.name))
-                initGame(scene, cmd)
+                initGame(scene, cmd, false, state)
                 saveModel()
             }
 

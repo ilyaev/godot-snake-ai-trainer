@@ -79,7 +79,8 @@ const config = {
     },
     qvalues: {},
     history: [],
-    agent: null
+    agent: null,
+    rivalAgent: null
 }
 
 const actions = [
@@ -175,7 +176,9 @@ module.exports = {
                     return scene.params.numActions
                 }
             }
-            scene.agent = new DQNAgent(scene.env, scene.spec)
+            // scene.agent = new DQNAgent(scene.env, scene.spec)
+            // scene.rivalAgent = new DQNAgent(scene.env, scene.spec)
+            initAgents(scene.env, scene.spec)
             scene.defaultActor = clone(scene.actor)
             scene.defaultActor.student = true
             scene.defaultActor.active = true
@@ -383,10 +386,11 @@ module.exports = {
 
             getActiveActors().forEach(actor => {
                 buildWalls()
+
                 var toRespawn = false
                 const stepState = buildState(actor)
 
-                var action = scene.agent.act(stepState)
+                var action = actor.student ? scene.agent.act(stepState) : scene.rivalAgent.act(stepState)
                 var act = actions[action]
 
                 var prev = clone({
@@ -455,6 +459,16 @@ module.exports = {
             })
         }
 
+        const initAgents = (params, spec) => {
+            scene.agent = new DQNAgent(params, spec)
+            scene.rivalAgent = new DQNAgent(params, spec)
+        }
+
+        const implantBrain = (agentBrain, rivalBrain = false) => {
+            scene.agent.fromJSON(agentBrain)
+            scene.rivalAgent.fromJSON(rivalBrain ? rivalBrain : agentBrain)
+        }
+
         const resizeTo = (maxX, maxY) => {
             scene.maxX = maxX
             scene.maxY = maxY
@@ -513,7 +527,9 @@ module.exports = {
             nextStep,
             generateID,
             printField,
-            resizeTo
+            resizeTo,
+            initAgents,
+            implantBrain
         }
     }
 }
