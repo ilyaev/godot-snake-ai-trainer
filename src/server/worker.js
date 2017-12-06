@@ -64,6 +64,8 @@ let updateSpec = function(cmd) {
     snake.scene.agent.gamma = cmd.value.gamma
     snake.scene.agent.experienceSize = cmd.value.experience_size
     snake.scene.agent.experienceAddEvery = cmd.value.learning_steps_per_iteration
+    snake.scene.spec.rivals = (Math.floor(cmd.value.size / 7) - 1) * 2
+    snake.resizeTo(cmd.value.size, cmd.value.size)
 }
 
 let handshake = function(cmd) {
@@ -86,6 +88,9 @@ let startLearning = function(cmd) {
     snake.initScene()
     snake.scene.modelName = modelName
     snake.scene.spec = cmd.spec
+    if (!snake.scene.spec.size) {
+        snake.scene.spec.size = 7
+    }
     snake.scene.params = cmd.params
     snake.scene.actor = cmd.actor
     snake.scene.result = cmd.result
@@ -95,6 +100,8 @@ let startLearning = function(cmd) {
     snake.scene.agent.gamma = cmd.spec.gamma
     snake.scene.maxX = cmd.maxX
     snake.scene.maxY = cmd.maxY
+    snake.resizeTo(snake.scene.spec.size, snake.scene.spec.size)
+    snake.scene.spec.rivals = (Math.floor(snake.scene.spec.size / 7) - 1) * 2
     if (cmd.start) {
         log('Learning Started - ' + snake.scene.agent.epsilon)
         run()

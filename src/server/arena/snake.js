@@ -20,6 +20,9 @@ const initGameFromModel = (scene, model, state) => {
     scene.maxX = model.params.maxX
     scene.maxY = model.params.maxY
     scene.spec = model.spec
+    if (!scene.spec.size) {
+        scene.spec.size = 7
+    }
     scene.target = {
         x: scene.maxX - 1,
         y: scene.maxY - 1
