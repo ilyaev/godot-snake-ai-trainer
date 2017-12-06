@@ -384,7 +384,7 @@ module.exports = {
                         result.push(actor.tail.length / scene.maxX * (scene.maxX / 3) - 0.5)
                         break
                     case FEATURE_HUNGER:
-                        result.push(actor.withoutFood ? actor.withoutFood / scene.maxX * (scene.maxX / 3) - 0.5 : 0)
+                        result.push(actor.withoutFood ? actor.withoutFood / scene.maxX * (scene.maxX / 2) - 0.5 : 0)
                         break
                     default:
                         break
@@ -453,7 +453,7 @@ module.exports = {
                     }
                 } else {
                     if (actor.student) {
-                        if (actor.withoutFood > scene.maxX * (scene.maxX / 3)) {
+                        if (actor.withoutFood > scene.maxX * (scene.maxX / 2)) {
                             restartActor(-1)
                             if (instanceProps.mode === 'server') {
                                 scene.agent.learn(-1)
