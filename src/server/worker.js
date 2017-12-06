@@ -13,6 +13,66 @@ let log = txt => {
     console.log('WORKER ' + id + ': ' + txt)
 }
 
+let curRule = {
+    id: 0
+}
+
+const curriculum = [
+    {
+        epoch: 1000,
+        id: 1,
+        epsilon: 0.5
+    },
+    {
+        epoch: 2000,
+        id: 2,
+        epsilon: 0.4
+    },
+    {
+        epoch: 3000,
+        id: 3,
+        epsilon: 0.3
+    },
+    {
+        epoch: 4000,
+        id: 4,
+        epsilon: 0.2
+    },
+    {
+        epoch: 5000,
+        id: 5,
+        epsilon: 0.1
+    },
+    {
+        epoch: 10000,
+        id: 6,
+        epsilon: 0.05
+    },
+    {
+        epoch: 15000,
+        id: 7,
+        epsilon: 0.002
+    },
+    {
+        epoch: 30000,
+        id: 8,
+        epsilon: 0.002,
+        size: 14
+    },
+    {
+        epoch: 60000,
+        id: 9,
+        epsilon: 0.001,
+        size: 21
+    },
+    {
+        epoch: 1000000,
+        id: 10,
+        epsilon: 0.001,
+        size: 28
+    }
+]
+
 process.on('message', msg => {
     let cmd = {}
 
@@ -107,6 +167,7 @@ let startLearning = function(cmd) {
         log('Learning Started - ' + snake.scene.agent.epsilon)
         run()
     }
+    curSpec = snake.scene.spec
 }
 
 let run = function() {
@@ -145,4 +206,20 @@ ticker = setInterval(() => {
         name: snake.scene.modelName,
         brain: snake.scene.agent.toJSON()
     })
+    if (handler) {
+        const nextRule = curriculum.filter(one => one.epoch > snake.scene.result.epoch)[0]
+        if (nextRule && nextRule.id !== curRule.id) {
+            console.log(snake.scene.modelName + ': Apply rule: ', nextRule)
+            curRule = nextRule
+            if (nextRule.epsilon) {
+                snake.scene.spec.epsilon = nextRule.epsilon
+                snake.scene.agent.epsilon = nextRule.epsilon
+                if (nextRule.size) {
+                    snake.scene.spec.size = nextRule.size
+                    snake.scene.spec.rivals = (Math.floor(nextRule.size / 7) - 1) * 2
+                    snake.resizeTo(nextRule.size, nextRule.size)
+                }
+            }
+        }
+    }
 }, 1000)

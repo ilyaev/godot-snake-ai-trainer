@@ -10,6 +10,8 @@ const FEATURE_TAIL_DIRECTION = 3
 const FEATURE_VISION_CLOSE_RANGE = 4
 const FEATURE_VISION_FAR_RANGE = 5
 const FEATURE_VISION_MID_RANGE = 6
+const FEATURE_TAIL_SIZE = 7
+const FEATURE_HUNGER = 8
 
 const binmap = [1, 2, 4, 8, 16, 32, 64, 128]
 
@@ -31,6 +33,12 @@ const featureMap = {
     },
     [FEATURE_VISION_MID_RANGE]: {
         inputs: 16
+    },
+    [FEATURE_TAIL_SIZE]: {
+        inputs: 1
+    },
+    [FEATURE_HUNGER]: {
+        inputs: 1
     }
 }
 
@@ -51,6 +59,7 @@ const config = {
         x: 3,
         y: 3,
         averageSteps: 0,
+        withoutFood: 0,
         step: 0,
         tail: [
             {
@@ -371,6 +380,12 @@ module.exports = {
                     case FEATURE_VISION_MID_RANGE:
                         result = result.concat(buildMidRangeVision(actor))
                         break
+                    case FEATURE_TAIL_SIZE:
+                        result.push(actor.tail.length / scene.maxX * (scene.maxX / 3) - 0.5)
+                        break
+                    case FEATURE_HUNGER:
+                        result.push(actor.withoutFood ? actor.withoutFood / scene.maxX * (scene.maxX / 3) - 0.5 : 0)
+                        break
                     default:
                         break
                 }
@@ -404,9 +419,14 @@ module.exports = {
                 if (!actor.target) {
                     actor.target = scene.target
                 }
-
+                if (actor.student) {
+                    actor.withoutFood++
+                }
                 if (actor.x == actor.target.x && actor.y == actor.target.y) {
                     growSnake(actor)
+                    if (actor.student) {
+                        actor.withoutFood = 0
+                    }
                     toRespawn = true
                     if (instanceProps.mode === 'server' && actor.student) {
                         const availActions = actions.reduce((result, next) => {
@@ -432,6 +452,15 @@ module.exports = {
                         actor.active = false
                     }
                 } else {
+                    if (actor.student) {
+                        if (actor.withoutFood > scene.maxX * (scene.maxX / 3)) {
+                            restartActor(-1)
+                            if (instanceProps.mode === 'server') {
+                                scene.agent.learn(-1)
+                            }
+                            return
+                        }
+                    }
                     if (instanceProps.mode === 'server' && actor.student) {
                         scene.agent.learn(0)
                     }
