@@ -353,7 +353,7 @@ const connection = (io, socket) => {
                         }
                         break
                     case 'CREATE_MODEL':
-                        if (io.storage.list().length >= 10) {
+                        if (io.storage.list().length >= 20) {
                             sendCommand(socket, 'ERROR', { error: 'Maximum models count reached. Delete some' })
                         } else {
                             if (cmd.name && cmd.features.length > 0) {
