@@ -12,7 +12,8 @@
         "start": "node src/server/server.js",
         "mongo": "./mongo-db",
         "build": "webpack --progress --display-error-details && cp src/index.html dist/index.html",
-        "postinstall": "webpack --progress --display-error-details && cp src/index.html dist/index.html && chmod 777 src/models"
+        "postinstall": "webpack --progress --display-error-details && cp src/index.html dist/index.html && chmod 777 src/models",
+        "export": "node ./export.js model"
     },
     "dependencies": {
         "babel-core": "^6.21.0",
@@ -25,6 +26,7 @@
         "babel-preset-react": "^6.16.0",
         "babel-preset-stage-0": "^6.16.0",
         "babel-preset-stage-2": "^6.18.0",
+        "commander": "^2.12.2",
         "dat-gui": "^0.5.0",
         "dateformat": "^3.0.2",
         "dotenv": "^4.0.0",

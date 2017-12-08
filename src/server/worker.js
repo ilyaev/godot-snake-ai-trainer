@@ -17,10 +17,13 @@ let curRule = {
     id: 0
 }
 
+let lastEpoch = 0
+
 const curriculum = [
     {
         epoch: 1000,
         id: 1,
+        level: 'level1',
         epsilon: 0.5
     },
     {
@@ -46,32 +49,34 @@ const curriculum = [
     {
         epoch: 10000,
         id: 6,
-        epsilon: 0.05
-    },
-    {
-        epoch: 15000,
-        id: 7,
         epsilon: 0.002
     },
     {
-        epoch: 30000,
+        id: 7,
+        epoch: 15000,
+        level: 'level2',
+        epsilon: 0.1
+    },
+    {
         id: 8,
-        epsilon: 0.002,
-        size: 14
+        epoch: 16000,
+        epsilon: 0.002
     },
     {
-        epoch: 60000,
         id: 9,
-        epsilon: 0.001,
-        size: 21
+        epoch: 25000,
+        level: 'level3',
+        epsilon: 0.1
     },
     {
-        epoch: 1000000,
         id: 10,
-        epsilon: 0.001,
-        size: 28
+        epoch: 26000,
+        epsilon: 0.02
     }
 ]
+
+const levels = curriculum.filter(one => one.level).map(one => one.level)
+console.log('ALL LEVELS - ', levels)
 
 process.on('message', msg => {
     let cmd = {}
@@ -124,8 +129,8 @@ let updateSpec = function(cmd) {
     snake.scene.agent.gamma = cmd.value.gamma
     snake.scene.agent.experienceSize = cmd.value.experience_size
     snake.scene.agent.experienceAddEvery = cmd.value.learning_steps_per_iteration
-    snake.scene.spec.rivals = (Math.floor(cmd.value.size / 7) - 1) * 2
-    snake.resizeTo(cmd.value.size, cmd.value.size)
+    //snake.scene.spec.rivals = (Math.floor(cmd.value.size / 7) - 1) * 2
+    //snake.resizeTo(cmd.value.size, cmd.value.size)
 }
 
 let handshake = function(cmd) {
@@ -155,7 +160,6 @@ let startLearning = function(cmd) {
     snake.scene.actor = cmd.actor
     snake.scene.result = cmd.result
     snake.implantBrain(cmd.brain)
-    //snake.scene.agent.fromJSON(cmd.brain)
     snake.scene.agent.epsilon = cmd.spec.epsilon
     snake.scene.agent.alpha = cmd.spec.alpha
     snake.scene.agent.gamma = cmd.spec.gamma
@@ -163,6 +167,7 @@ let startLearning = function(cmd) {
     snake.scene.maxY = cmd.maxY
     snake.resizeTo(snake.scene.spec.size, snake.scene.spec.size)
     snake.scene.spec.rivals = (Math.floor(snake.scene.spec.size / 7) - 1) * 2
+    snake.loadLevel('level1')
     if (cmd.start) {
         log('Learning Started - ' + snake.scene.agent.epsilon)
         run()
@@ -214,12 +219,15 @@ ticker = setInterval(() => {
             if (nextRule.epsilon) {
                 snake.scene.spec.epsilon = nextRule.epsilon
                 snake.scene.agent.epsilon = nextRule.epsilon
-                if (nextRule.size) {
-                    snake.scene.spec.size = nextRule.size
-                    snake.scene.spec.rivals = (Math.floor(nextRule.size / 7) - 1) * 2
-                    snake.resizeTo(nextRule.size, nextRule.size)
-                }
             }
+            if (nextRule.level) {
+                snake.loadLevel(nextRule.level)
+            }
+        }
+        if (snake.scene.result.epoch > 30000 && snake.scene.result.epoch - lastEpoch > 1000) {
+            snake.loadLevel(levels[Math.floor(Math.random() * levels.length)])
+            snake.printField()
+            lastEpoch = snake.scene.result.epoch
         }
     }
 }, 1000)

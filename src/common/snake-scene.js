@@ -12,6 +12,8 @@ const FEATURE_VISION_FAR_RANGE = 5
 const FEATURE_VISION_MID_RANGE = 6
 const FEATURE_TAIL_SIZE = 7
 const FEATURE_HUNGER = 8
+const FEATURE_FULL_MAP_4 = 9
+const academy = require('./levels')
 
 const binmap = [1, 2, 4, 8, 16, 32, 64, 128]
 
@@ -39,6 +41,9 @@ const featureMap = {
     },
     [FEATURE_HUNGER]: {
         inputs: 1
+    },
+    [FEATURE_FULL_MAP_4]: {
+        inputs: 16
     }
 }
 
@@ -68,6 +73,9 @@ const config = {
             }
         ]
     },
+    food: [],
+    maxFood: 10,
+    level: false,
     rivals: [],
     target: {
         x: 1,
@@ -131,6 +139,7 @@ module.exports = {
         scene.id = generateID()
 
         var walls = {}
+        var foods = {}
 
         const getActiveActors = () => {
             return [scene.actor].concat(scene.rivals).filter(one => typeof one.active === 'undefined' || one.active)
@@ -199,10 +208,12 @@ module.exports = {
                 }
                 if (!walls[x]) {
                     walls[x] = {}
+                    foods[x] = {}
                 }
                 for (var y = 0; y <= scene.maxY; y++) {
                     scene.qvalues[x][y] = 0
                     walls[x][y] = false
+                    foods[x][y] = false
                 }
             }
 
@@ -247,9 +258,6 @@ module.exports = {
         }
 
         const restartActor = reward => {
-            if (reward > 0) {
-                respawnFood(scene.actor)
-            }
             scene.history.push({
                 size: scene.actor.tail.length,
                 step: scene.actor.step,
@@ -257,6 +265,13 @@ module.exports = {
             })
             scene.history = scene.history.splice(-1000)
             scene.actor = clone(scene.defaultActor)
+            var place = getNextRivalPlace()
+            const x = place.cX
+            const y = place.cY
+            scene.actor.x = x
+            scene.actor.y = y
+            scene.actor.tail[0].x = x - 1
+            scene.actor.tail[0].y = y - 1
             initRivals()
             if (!scene.result.epoch) {
                 scene.result.epoch = 0
@@ -264,12 +279,11 @@ module.exports = {
             ;[10, 100, 1000].forEach(period => (scene.result.epoch % period === 0 ? calculateAverage(period) : null))
             scene.result.epoch += 1
             scene.actor.step = 0
-            if (isWall(scene.target.x, scene.target.y)) {
-                respawnFood(scene.actor)
-            }
+            scene.food = []
+            respawnFood(scene.actor)
         }
 
-        const respawnFood = actor => {
+        const getNextFood = () => {
             var wall = true
             var x, y
             while (wall == true) {
@@ -277,13 +291,34 @@ module.exports = {
                 y = Math.round(Math.random() * scene.maxY)
                 wall = isWall(x, y)
             }
-            if (actor.student) {
-                scene.target.x = x
-                scene.target.y = y
-            } else {
-                actor.target.x = x
-                actor.target.y = y
+            return { x, y }
+        }
+
+        const removeFood = food => {
+            scene.food = scene.food.filter(one => one.x !== food.x || one.y != one.y)
+            while (scene.food.length < scene.maxFood) {
+                respawnFood(false)
             }
+        }
+
+        const respawnFood = actor => {
+            var food = getNextFood()
+            if (actor) {
+                if (actor.student) {
+                    removeFood(scene.target, actor)
+                    scene.target.x = food.x
+                    scene.target.y = food.y
+                    //console.log('---eaten by player')
+                } else {
+                    removeFood(actor.target, actor)
+                    //console.log('---eaten by rivals')
+                    actor.target.x = food.x
+                    actor.target.y = food.y
+                }
+            }
+            const newFood = clone(food)
+            food.actor = actor ? actor : false
+            scene.food.push(food)
         }
 
         const growSnake = actor => {
@@ -293,9 +328,6 @@ module.exports = {
                 y: last.y,
                 wait: 1
             })
-            if (actor.student) {
-                scene.result.wins++
-            }
         }
 
         const isWall = (x, y) => {
@@ -303,6 +335,13 @@ module.exports = {
                 return true
             }
             return walls[x][y]
+        }
+
+        const isFood = (x, y) => {
+            if (typeof foods[x] === 'undefined' || typeof foods[x][y] === 'undefined') {
+                return false
+            }
+            return foods[x][y]
         }
 
         const isFutureWall = (action, actor) => {
@@ -314,12 +353,34 @@ module.exports = {
             for (var x = 0; x <= scene.maxX; x++) {
                 for (var y = 0; y <= scene.maxY; y++) {
                     walls[x][y] = false
+                    foods[x][y] = false
                 }
             }
+            if (scene.level) {
+                scene.level.walls.forEach(wall => (walls[wall.x][wall.y] = true))
+            }
+            scene.food.forEach(food => (foods[food.x][food.y] = true))
             getActiveActors().forEach(actor => {
                 walls[actor.x][actor.y] = true
                 actor.tail.forEach(one => (walls[one.x][one.y] = true))
             })
+        }
+
+        const buildFullMap = (actor, range) => {
+            const rows = []
+            for (var dx = -2; dx < 2; dx++) {
+                for (var dy = -2; dy < 2; dy++) {
+                    let value = 0
+                    if (isWall(actor.x + dx, actor.y + dy)) {
+                        value = -1
+                    }
+                    if (isFood(actor.x + dx, actor.y + dy)) {
+                        value = 1
+                    }
+                    rows.push(value)
+                }
+            }
+            return rows
         }
 
         const buildMidRangeVision = actor => {
@@ -380,6 +441,8 @@ module.exports = {
                     case FEATURE_VISION_MID_RANGE:
                         result = result.concat(buildMidRangeVision(actor))
                         break
+                    case FEATURE_FULL_MAP_4:
+                        result = result.concat(buildFullMap(actor, 4))
                     case FEATURE_TAIL_SIZE:
                         result.push(actor.tail.length / scene.maxX * (scene.maxX / 3) - 0.5)
                         break
@@ -398,6 +461,11 @@ module.exports = {
             scene.actor.step += 1
 
             var footer = ''
+
+            if (scene.result.step % 100 === 0) {
+                //scene.rivalAgent.fromJSON(scene.agent.toJSON())
+                //printField()
+            }
 
             getActiveActors().forEach(actor => {
                 buildWalls()
@@ -422,10 +490,12 @@ module.exports = {
                 if (actor.student) {
                     actor.withoutFood++
                 }
-                if (actor.x == actor.target.x && actor.y == actor.target.y) {
+                //if (actor.x == actor.target.x && actor.y == actor.target.y) {
+                if (isFood(actor.x, actor.y)) {
                     growSnake(actor)
                     if (actor.student) {
                         actor.withoutFood = 0
+                        scene.result.wins++
                     }
                     toRespawn = true
                     if (instanceProps.mode === 'server' && actor.student) {
@@ -453,13 +523,13 @@ module.exports = {
                     }
                 } else {
                     if (actor.student) {
-                        if (actor.withoutFood > scene.maxX * (scene.maxX / 2)) {
-                            restartActor(-1)
-                            if (instanceProps.mode === 'server') {
-                                scene.agent.learn(-1)
-                            }
-                            return
-                        }
+                        // if (actor.withoutFood > scene.maxX * (scene.maxX / 2)) {
+                        //     restartActor(-1)
+                        //     if (instanceProps.mode === 'server') {
+                        //         scene.agent.learn(-1)
+                        //     }
+                        //     return
+                        // }
                     }
                     if (instanceProps.mode === 'server' && actor.student) {
                         scene.agent.learn(0)
@@ -499,16 +569,23 @@ module.exports = {
         }
 
         const resizeTo = (maxX, maxY) => {
-            scene.maxX = maxX
-            scene.maxY = maxY
+            if (scene.level) {
+                scene.maxX = scene.level.maxX
+                scene.maxY = scene.level.maxY
+            } else {
+                scene.maxX = maxX
+                scene.maxY = maxY
+            }
             scene.params.maxX = maxX
             scene.params.maxY = maxY
             for (var x = 0; x <= scene.maxX; x++) {
                 if (!walls[x]) {
                     walls[x] = {}
+                    foods[x] = {}
                 }
                 for (var y = 0; y <= scene.maxY; y++) {
                     walls[x][y] = false
+                    foods[x][y] = false
                 }
             }
             buildWalls()
@@ -518,20 +595,21 @@ module.exports = {
             if (instanceProps.mode === 'client') {
                 return
             }
-            console.log('H: ', scene.actor.x, ',', scene.actor.y, ' T: ', scene.actor.tail.length) //, scene.actor, scene.actor.tail)
+            console.log('F: ' + scene.food.length + ', H: ', scene.actor.x, ',', scene.actor.y, ' T: ', scene.actor.tail.length) //, scene.actor, scene.actor.tail)
             var row = ''
             console.log('-------- ' + scene.maxX + 'x' + scene.maxY + ' -------')
-            for (var x = 0; x <= scene.maxX; x++) {
+            for (var y = 0; y <= scene.maxY; y++) {
                 row = ''
-                for (var y = 0; y <= scene.maxY; y++) {
+                for (var x = 0; x <= scene.maxX; x++) {
                     var c = '.'
 
                     if (isWall(x, y)) {
                         c = 'w'
                     }
 
-                    if (x == scene.target.x && y == scene.target.y) {
-                        c = 'f'
+                    if (isFood(x, y)) {
+                        //x == scene.target.x && y == scene.target.y) {
+                        c = 'F'
                     }
 
                     if (x == scene.actor.x && y == scene.actor.y) {
@@ -542,6 +620,18 @@ module.exports = {
                 }
                 console.log(row)
             }
+        }
+
+        const loadLevel = levelName => {
+            scene.spec.rivals = 0
+            var level = false
+            if (levelName === 'random') {
+                level = academy.levels[Math.floor(Math.random() * academy.levels.length)]
+            } else {
+                level = academy.levels.filter(one => one.name === levelName)[0]
+            }
+            scene.level = level
+            resizeTo(level.maxX - 1, level.maxY - 1)
         }
 
         return {
@@ -557,6 +647,9 @@ module.exports = {
             generateID,
             printField,
             resizeTo,
+            loadLevel,
+            walls,
+            foods,
             initAgents,
             implantBrain
         }
