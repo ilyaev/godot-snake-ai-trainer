@@ -179,6 +179,7 @@ let run = function() {
     counter++
     snake.nextStep()
     handler = setImmediate(run)
+    //hadler = setTimeout(run, 500)
 }
 
 let finishLearning = function(cmd) {

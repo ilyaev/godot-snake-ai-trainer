@@ -290,12 +290,15 @@ module.exports = {
                 x = Math.round(Math.random() * scene.maxX)
                 y = Math.round(Math.random() * scene.maxY)
                 wall = isWall(x, y)
+                if (!wall) {
+                    wall = isFood(x, y)
+                }
             }
             return { x, y }
         }
 
         const removeFood = food => {
-            scene.food = scene.food.filter(one => one.x !== food.x || one.y != one.y)
+            scene.food = scene.food.filter(one => one.x !== food.x || one.y != food.y)
             while (scene.food.length < scene.maxFood) {
                 respawnFood(false)
             }
@@ -316,7 +319,7 @@ module.exports = {
                     actor.target.y = food.y
                 }
             }
-            const newFood = clone(food)
+            const newFood = { x: food.x, y: food.y }
             food.actor = actor ? actor : false
             scene.food.push(food)
         }
@@ -328,6 +331,11 @@ module.exports = {
                 y: last.y,
                 wait: 1
             })
+            const target = scene.food[Math.floor(Math.random() * scene.food.length)]
+            actor.target = {
+                x: target.x,
+                y: target.y
+            }
         }
 
         const isWall = (x, y) => {
@@ -466,6 +474,9 @@ module.exports = {
                 //scene.rivalAgent.fromJSON(scene.agent.toJSON())
                 //printField()
             }
+            if (scene.actor.tail.length > 5) {
+                //printField()
+            }
 
             getActiveActors().forEach(actor => {
                 buildWalls()
@@ -476,10 +487,10 @@ module.exports = {
                 var action = actor.student ? scene.agent.act(stepState) : scene.rivalAgent.act(stepState)
                 var act = actions[action]
 
-                var prev = clone({
+                var prev = {
                     x: actor.x,
                     y: actor.y
-                })
+                }
 
                 actor.x += act.dx
                 actor.y += act.dy
@@ -492,6 +503,7 @@ module.exports = {
                 }
                 //if (actor.x == actor.target.x && actor.y == actor.target.y) {
                 if (isFood(actor.x, actor.y)) {
+                    removeFood({ x: actor.x, y: actor.y })
                     growSnake(actor)
                     if (actor.student) {
                         actor.withoutFood = 0
@@ -535,26 +547,21 @@ module.exports = {
                         scene.agent.learn(0)
                     }
                 }
-
                 actor.tail = actor.tail.map(one => {
                     if (one.wait > 0) {
                         one.wait--
                         return one
                     } else {
-                        const next = clone({
+                        const next = {
                             x: one.x,
                             y: one.y
-                        })
+                        }
                         one.x = prev.x
                         one.y = prev.y
-                        prev = clone(next)
+                        prev = next
                     }
                     return one
                 })
-
-                if (toRespawn) {
-                    respawnFood(actor)
-                }
             })
         }
 
@@ -632,6 +639,7 @@ module.exports = {
             }
             scene.level = level
             resizeTo(level.maxX - 1, level.maxY - 1)
+            respawnFood(scene.actor)
         }
 
         return {
