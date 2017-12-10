@@ -3,6 +3,7 @@ const R = require('./agent').R
 
 const clone = obj => JSON.parse(JSON.stringify(obj))
 const generateID = () => Math.round(Math.random() * 100000)
+const randNum = num => Math.floor(Math.random() * num)
 
 const FEATURE_HEAD_COORDINATES = 1
 const FEATURE_CLOSEST_FOOD_DICRECTION = 2
@@ -194,8 +195,6 @@ module.exports = {
                     return scene.params.numActions
                 }
             }
-            // scene.agent = new DQNAgent(scene.env, scene.spec)
-            // scene.rivalAgent = new DQNAgent(scene.env, scene.spec)
             initAgents(scene.env, scene.spec)
             scene.defaultActor = clone(scene.actor)
             scene.defaultActor.student = true
@@ -281,6 +280,7 @@ module.exports = {
             scene.actor.step = 0
             scene.food = []
             respawnFood(scene.actor)
+            scene.actor.target = scene.food[randNum(scene.food.length)]
         }
 
         const getNextFood = () => {
@@ -324,6 +324,16 @@ module.exports = {
             scene.food.push(food)
         }
 
+        const shrinkSnake = actor => {
+            if (actor.tail.length > 1) {
+                actor.tail = actor.tail.slice(0, -1)
+                actor.withoutFood = 0
+                return true
+            } else {
+                return false
+            }
+        }
+
         const growSnake = actor => {
             const last = actor.tail[actor.tail.length - 1]
             actor.tail.push({
@@ -331,7 +341,7 @@ module.exports = {
                 y: last.y,
                 wait: 1
             })
-            const target = scene.food[Math.floor(Math.random() * scene.food.length)]
+            const target = scene.food[randNum(scene.food.length)]
             actor.target = {
                 x: target.x,
                 y: target.y
@@ -464,19 +474,17 @@ module.exports = {
             return result
         }
 
+        const teachAgent = reward => {
+            if (instanceProps.mode === 'server') {
+                scene.agent.learn(reward)
+            }
+        }
+
         const nextStep = () => {
             scene.result.step++
             scene.actor.step += 1
 
             var footer = ''
-
-            if (scene.result.step % 100 === 0) {
-                //scene.rivalAgent.fromJSON(scene.agent.toJSON())
-                //printField()
-            }
-            if (scene.actor.tail.length > 5) {
-                //printField()
-            }
 
             getActiveActors().forEach(actor => {
                 buildWalls()
@@ -501,7 +509,7 @@ module.exports = {
                 if (actor.student) {
                     actor.withoutFood++
                 }
-                //if (actor.x == actor.target.x && actor.y == actor.target.y) {
+
                 if (isFood(actor.x, actor.y)) {
                     removeFood({ x: actor.x, y: actor.y })
                     growSnake(actor)
@@ -510,41 +518,36 @@ module.exports = {
                         scene.result.wins++
                     }
                     toRespawn = true
-                    if (instanceProps.mode === 'server' && actor.student) {
+                    if (actor.student) {
                         const availActions = actions.reduce((result, next) => {
                             return isWall(scene.actor.x + next.dx, scene.actor.y + next.dy) ? result : result + 1
                         }, 0)
                         if (availActions > 0) {
-                            scene.agent.learn(1)
+                            teachAgent(1)
                         } else {
+                            teachAgent(-2)
                             restartActor(-1)
-                            scene.agent.learn(-2)
                             return
                         }
                     }
                 } else if (isWall(actor.x, actor.y)) {
                     if (actor.student) {
                         footer = 'WALL'
+                        teachAgent(-1)
                         restartActor(-1)
-
-                        if (instanceProps.mode === 'server') {
-                            scene.agent.learn(-1)
-                        }
                     } else {
                         actor.active = false
                     }
                 } else {
                     if (actor.student) {
-                        // if (actor.withoutFood > scene.maxX * (scene.maxX / 2)) {
-                        //     restartActor(-1)
-                        //     if (instanceProps.mode === 'server') {
-                        //         scene.agent.learn(-1)
-                        //     }
-                        //     return
-                        // }
-                    }
-                    if (instanceProps.mode === 'server' && actor.student) {
-                        scene.agent.learn(0)
+                        if (actor.withoutFood > Math.min(100, scene.maxX * (scene.maxY / 3)) + actor.tail.length * 2) {
+                            teachAgent(-1)
+                            if (!shrinkSnake(actor)) {
+                                restartActor(-1)
+                            }
+                        } else {
+                            teachAgent(0)
+                        }
                     }
                 }
                 actor.tail = actor.tail.map(one => {
@@ -633,7 +636,7 @@ module.exports = {
             scene.spec.rivals = 0
             var level = false
             if (levelName === 'random') {
-                level = academy.levels[Math.floor(Math.random() * academy.levels.length)]
+                level = academy.levels[randNum(academy.levels.length)]
             } else {
                 level = academy.levels.filter(one => one.name === levelName)[0]
             }
@@ -649,6 +652,7 @@ module.exports = {
             initRivals,
             restartActor,
             growSnake,
+            shrinkSnake,
             isWall,
             clone,
             nextStep,

@@ -1,6 +1,8 @@
 var debug = process.env.NODE_ENV !== 'production'
+var WebpackPreBuildPlugin = require('pre-build-webpack')
 var webpack = require('webpack')
 var path = require('path')
+var exec = require('child_process').exec
 
 var DIST_DIR = path.resolve(__dirname, 'dist')
 var SRC_DIR = path.resolve(__dirname, 'src')
@@ -32,7 +34,17 @@ module.exports = {
         ]
     },
     plugins: debug
-        ? []
+        ? [
+              new WebpackPreBuildPlugin(function(stats) {
+                  exec('cd ../godot-snake-ai-dashboard && yarn run compile && cd ../godot-snake-ai-trainer', function(
+                      error,
+                      stdout,
+                      stdin
+                  ) {
+                      console.log(stdout)
+                  })
+              })
+          ]
         : [
               new webpack.optimize.DedupePlugin(),
               new webpack.optimize.OccurenceOrderPlugin(),
