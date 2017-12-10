@@ -14,6 +14,7 @@ const FEATURE_VISION_MID_RANGE = 6
 const FEATURE_TAIL_SIZE = 7
 const FEATURE_HUNGER = 8
 const FEATURE_FULL_MAP_4 = 9
+const FEATURE_FULL_MAP_6 = 10
 const academy = require('./levels')
 
 const binmap = [1, 2, 4, 8, 16, 32, 64, 128]
@@ -45,6 +46,9 @@ const featureMap = {
     },
     [FEATURE_FULL_MAP_4]: {
         inputs: 16
+    },
+    [FEATURE_FULL_MAP_6]: {
+        inputs: 36
     }
 }
 
@@ -384,10 +388,11 @@ module.exports = {
             })
         }
 
-        const buildFullMap = (actor, range) => {
+        const buildFullMap = (actor, fullRange) => {
             const rows = []
-            for (var dx = -2; dx < 2; dx++) {
-                for (var dy = -2; dy < 2; dy++) {
+            const range = Math.round(fullRange / 2)
+            for (var dx = -range; dx < range; dx++) {
+                for (var dy = -range; dy < range; dy++) {
                     let value = 0
                     if (isWall(actor.x + dx, actor.y + dy)) {
                         value = -1
@@ -461,8 +466,12 @@ module.exports = {
                         break
                     case FEATURE_FULL_MAP_4:
                         result = result.concat(buildFullMap(actor, 4))
+                        break
+                    case FEATURE_FULL_MAP_6:
+                        result = result.concat(buildFullMap(actor, 6))
+                        break
                     case FEATURE_TAIL_SIZE:
-                        result.push(actor.tail.length / scene.maxX * (scene.maxX / 3) - 0.5)
+                        result.push(actor.tail.length / scene.maxX * (scene.maxY / 3) - 0.5)
                         break
                     case FEATURE_HUNGER:
                         result.push(actor.withoutFood ? actor.withoutFood / scene.maxX * (scene.maxX / 2) - 0.5 : 0)
@@ -491,6 +500,8 @@ module.exports = {
 
                 var toRespawn = false
                 const stepState = buildState(actor)
+                //console.log(scene.params.features, calculateMaxNumInputs(scene.params.features))
+                //console.log(stepState.map(one => Math.round(one * 100) / 100))
 
                 var action = actor.student ? scene.agent.act(stepState) : scene.rivalAgent.act(stepState)
                 var act = actions[action]
