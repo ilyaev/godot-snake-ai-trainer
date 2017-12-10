@@ -55,23 +55,13 @@ const curriculum = [
         id: 7,
         epoch: 15000,
         level: 'level2',
-        epsilon: 0.1
+        epsilon: 0.001
     },
     {
         id: 8,
         epoch: 16000,
-        epsilon: 0.002
-    },
-    {
-        id: 9,
-        epoch: 25000,
         level: 'level3',
-        epsilon: 0.1
-    },
-    {
-        id: 10,
-        epoch: 26000,
-        epsilon: 0.02
+        epsilon: 0.001
     }
 ]
 
@@ -225,7 +215,7 @@ ticker = setInterval(() => {
                 snake.loadLevel(nextRule.level)
             }
         }
-        if (snake.scene.result.epoch > 30000 && snake.scene.result.epoch - lastEpoch > 1000) {
+        if (snake.scene.result.epoch > 17000 && snake.scene.result.epoch - lastEpoch > 1000) {
             snake.loadLevel(levels[Math.floor(Math.random() * levels.length)])
             snake.printField()
             lastEpoch = snake.scene.result.epoch
