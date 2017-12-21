@@ -35,7 +35,7 @@ const getIndex = () => {
     var index = {}
 
     try {
-        index = jsonfile.readFileSync()
+        index = jsonfile.readFileSync(indexFile)
     } catch (e) {
         index = {
             models: []
@@ -66,6 +66,25 @@ const getIndex = () => {
 var program = require('commander')
 
 program.version('0.1.0')
+
+program
+    .command('list')
+    .description('List of models')
+    .action(options => {
+        getCollection().then(collection => {
+            collection
+                .find({}, {})
+                .toArray()
+                .then(data => {
+                    data.map(record => {
+                        const model = JSON.parse(record.model)
+                        console.log(' - ' + model.name)
+                    })
+                    collection.db.close()
+                    process.exit()
+                })
+        })
+    })
 
 program
     .command('model [cmd]')

@@ -21,46 +21,110 @@ let lastEpoch = 0
 
 const curriculum = [
     {
-        epoch: 1000,
+        level: 'empty8x8',
+        epoch: 500,
         id: 1,
-        level: 'level1',
-        epsilon: 0.5
-    },
-    {
-        epoch: 2000,
-        id: 2,
-        epsilon: 0.4
-    },
-    {
-        epoch: 3000,
-        id: 3,
         epsilon: 0.3
     },
     {
-        epoch: 4000,
-        id: 4,
-        epsilon: 0.2
-    },
-    {
-        epoch: 5000,
-        id: 5,
+        level: 'empty8x8',
+        epoch: 1000,
+        id: 2,
         epsilon: 0.1
     },
     {
-        epoch: 10000,
-        id: 6,
-        epsilon: 0.002
+        level: 'empty8x8',
+        epoch: 2000,
+        id: 3,
+        epsilon: 0.01
     },
     {
+        epoch: 3000,
+        id: 4,
+        level: 'empty16x16',
+        epsilon: 0.1
+    },
+    {
+        epoch: 4000,
+        id: 5,
+        level: 'empty16x16',
+        epsilon: 0.01
+    },
+    {
+        epoch: 5000,
+        id: 6,
+        level: 'empty32x32',
+        epsilon: 0.1
+    },
+    {
+        epoch: 6000,
         id: 7,
-        epoch: 15000,
-        level: 'level2',
-        epsilon: 0.001
+        level: 'empty32x32',
+        epsilon: 0.01
     },
     {
         id: 8,
+        level: 'one',
+        epoch: 7000,
+        epsilon: 0.1
+    },
+    {
+        id: 9,
+        level: 'one',
+        epoch: 8000,
+        epsilon: 0.01
+    },
+    {
+        id: 10,
+        level: 'two',
+        epoch: 9000,
+        epsilon: 0.1
+    },
+    {
+        id: 11,
+        level: 'two',
+        epoch: 10000,
+        epsilon: 0.01
+    },
+    {
+        id: 12,
+        level: 'three',
+        epoch: 11000,
+        epsilon: 0.1
+    },
+    {
+        id: 13,
+        level: 'three',
+        epoch: 12000,
+        epsilon: 0.01
+    },
+    {
+        id: 14,
+        level: 'four',
+        epoch: 13000,
+        epsilon: 0.1
+    },
+    {
+        id: 15,
+        level: 'four',
+        epoch: 14000,
+        epsilon: 0.01
+    },
+    {
+        id: 16,
+        level: 'five',
+        epoch: 15000,
+        epsilon: 0.1
+    },
+    {
+        id: 17,
+        level: 'five',
         epoch: 16000,
-        level: 'level3',
+        epsilon: 0.01
+    },
+    {
+        id: 18,
+        epoch: 20000,
         epsilon: 0.001
     }
 ]
@@ -157,7 +221,7 @@ let startLearning = function(cmd) {
     snake.scene.maxY = cmd.maxY
     snake.resizeTo(snake.scene.spec.size, snake.scene.spec.size)
     snake.scene.spec.rivals = (Math.floor(snake.scene.spec.size / 7) - 1) * 2
-    snake.loadLevel('level1')
+    snake.loadLevel('empty8x8')
     if (cmd.start) {
         log('Learning Started - ' + snake.scene.agent.epsilon)
         run()
@@ -219,6 +283,9 @@ ticker = setInterval(() => {
             snake.loadLevel(levels[Math.floor(Math.random() * levels.length)])
             snake.printField()
             lastEpoch = snake.scene.result.epoch
+            const newE = Math.random() > 0.8 ? 0.001 : 0.01 + Math.random() * 0.1
+            snake.scene.spec.epsilon = newE
+            console.log('Switch to level: ' + snake.scene.level.name + ' / e: ' + newE)
         }
     }
 }, 1000)

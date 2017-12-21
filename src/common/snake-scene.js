@@ -15,6 +15,7 @@ const FEATURE_TAIL_SIZE = 7
 const FEATURE_HUNGER = 8
 const FEATURE_FULL_MAP_4 = 9
 const FEATURE_FULL_MAP_6 = 10
+const FEATURE_CLOSEST_FOOD_ANGLE = 11
 const academy = require('./levels')
 
 const binmap = [1, 2, 4, 8, 16, 32, 64, 128]
@@ -25,6 +26,9 @@ const featureMap = {
     },
     [FEATURE_CLOSEST_FOOD_DICRECTION]: {
         inputs: 2
+    },
+    [FEATURE_CLOSEST_FOOD_ANGLE]: {
+        inputs: 1
     },
     [FEATURE_TAIL_DIRECTION]: {
         inputs: 2
@@ -79,7 +83,7 @@ const config = {
         ]
     },
     food: [],
-    maxFood: 10,
+    maxFood: 1,
     level: false,
     rivals: [],
     target: {
@@ -223,6 +227,7 @@ module.exports = {
             scene.result.wins = 0
             scene.result.step = 0
             scene.result.epoch = 0
+            restartActor(-1)
             initRivals()
         }
 
@@ -283,8 +288,9 @@ module.exports = {
             scene.result.epoch += 1
             scene.actor.step = 0
             scene.food = []
-            respawnFood(scene.actor)
-            scene.actor.target = scene.food[randNum(scene.food.length)]
+            respawnFood(scene.actor, true)
+            scene.actor.target = clone(scene.food[0])
+            scene.target = clone(scene.food[0])
         }
 
         const getNextFood = () => {
@@ -302,19 +308,20 @@ module.exports = {
         }
 
         const removeFood = food => {
-            scene.food = scene.food.filter(one => one.x !== food.x || one.y != food.y)
+            scene.food = scene.food.filter(one => one.x !== food.x || one.y !== food.y)
             while (scene.food.length < scene.maxFood) {
                 respawnFood(false)
             }
         }
 
-        const respawnFood = actor => {
+        const respawnFood = (actor, pure = false) => {
             var food = getNextFood()
-            if (actor) {
+            if (actor && !pure) {
                 if (actor.student) {
                     removeFood(scene.target, actor)
                     scene.target.x = food.x
                     scene.target.y = food.y
+                    actor.target = scene.target
                     //console.log('---eaten by player')
                 } else {
                     removeFood(actor.target, actor)
@@ -451,6 +458,13 @@ module.exports = {
                             result.push((scene.target.y - actor.y) / scene.maxY)
                         }
                         break
+                    case FEATURE_CLOSEST_FOOD_ANGLE:
+                        if (!actor.target) {
+                            actor.target = scene.target
+                        }
+                        const hip = Math.sqrt(Math.pow(actor.target.x - actor.x, 2) + Math.pow(actor.target.y - actor.y, 2))
+                        result.push((actor.target.x - actor.x) / hip)
+                        break
                     case FEATURE_VISION_CLOSE_RANGE:
                         ;[0, 1, 2, 3].forEach(direction => result.push(isFutureWall(direction, actor)))
                         break
@@ -522,6 +536,7 @@ module.exports = {
                 }
 
                 if (isFood(actor.x, actor.y)) {
+                    const ownFood = actor.x === actor.target.x && actor.y === actor.target.y
                     removeFood({ x: actor.x, y: actor.y })
                     growSnake(actor)
                     if (actor.student) {
@@ -534,9 +549,9 @@ module.exports = {
                             return isWall(scene.actor.x + next.dx, scene.actor.y + next.dy) ? result : result + 1
                         }, 0)
                         if (availActions > 0) {
-                            teachAgent(1)
+                            teachAgent(ownFood ? 10 : 1)
                         } else {
-                            teachAgent(-2)
+                            teachAgent(-10)
                             restartActor(-1)
                             return
                         }
@@ -591,8 +606,8 @@ module.exports = {
 
         const resizeTo = (maxX, maxY) => {
             if (scene.level) {
-                scene.maxX = scene.level.maxX
-                scene.maxY = scene.level.maxY
+                scene.maxX = scene.level.maxX - 1
+                scene.maxY = scene.level.maxY - 1
             } else {
                 scene.maxX = maxX
                 scene.maxY = maxY
@@ -652,8 +667,12 @@ module.exports = {
                 level = academy.levels.filter(one => one.name === levelName)[0]
             }
             scene.level = level
+            scene.maxFood = level.maxFood || 1
             resizeTo(level.maxX - 1, level.maxY - 1)
-            respawnFood(scene.actor)
+            scene.food = []
+            respawnFood(scene.actor, true)
+            scene.actor.target = clone(scene.food[0])
+            scene.target = clone(scene.food[0])
         }
 
         return {

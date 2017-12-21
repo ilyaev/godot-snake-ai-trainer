@@ -43,6 +43,7 @@ module.exports = {
                   ) {
                       console.log(stdout)
                   })
+                  //exec('cp ../godot-snake/export/levels.js ./src/common/levels.js')
               })
           ]
         : [
