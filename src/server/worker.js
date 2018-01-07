@@ -22,42 +22,42 @@ let lastEpoch = 0
 const curriculum = [
     {
         level: 'empty8x8',
-        epoch: 500,
+        epoch: 5000,
         id: 1,
         epsilon: 0.3
     },
     {
         level: 'empty8x8',
-        epoch: 1000,
+        epoch: 10000,
         id: 2,
         epsilon: 0.1
     },
     {
         level: 'empty8x8',
-        epoch: 2000,
+        epoch: 20000,
         id: 3,
         epsilon: 0.01
     },
     {
-        epoch: 3000,
+        epoch: 30000,
         id: 4,
         level: 'empty16x16',
         epsilon: 0.1
     },
     {
-        epoch: 4000,
+        epoch: 40000,
         id: 5,
         level: 'empty16x16',
         epsilon: 0.01
     },
     {
-        epoch: 5000,
+        epoch: 50000,
         id: 6,
         level: 'empty32x32',
         epsilon: 0.1
     },
     {
-        epoch: 6000,
+        epoch: 60000,
         id: 7,
         level: 'empty32x32',
         epsilon: 0.01
@@ -65,66 +65,66 @@ const curriculum = [
     {
         id: 8,
         level: 'one',
-        epoch: 7000,
+        epoch: 70000,
         epsilon: 0.1
     },
     {
         id: 9,
         level: 'one',
-        epoch: 8000,
+        epoch: 80000,
         epsilon: 0.01
     },
     {
         id: 10,
         level: 'two',
-        epoch: 9000,
+        epoch: 90000,
         epsilon: 0.1
     },
     {
         id: 11,
         level: 'two',
-        epoch: 10000,
+        epoch: 100000,
         epsilon: 0.01
     },
     {
         id: 12,
         level: 'three',
-        epoch: 11000,
+        epoch: 110000,
         epsilon: 0.1
     },
     {
         id: 13,
         level: 'three',
-        epoch: 12000,
+        epoch: 120000,
         epsilon: 0.01
     },
     {
         id: 14,
         level: 'four',
-        epoch: 13000,
+        epoch: 130000,
         epsilon: 0.1
     },
     {
         id: 15,
         level: 'four',
-        epoch: 14000,
+        epoch: 140000,
         epsilon: 0.01
     },
     {
         id: 16,
         level: 'five',
-        epoch: 15000,
+        epoch: 150000,
         epsilon: 0.1
     },
     {
         id: 17,
         level: 'five',
-        epoch: 16000,
+        epoch: 160000,
         epsilon: 0.01
     },
     {
         id: 18,
-        epoch: 20000,
+        epoch: 170000,
         epsilon: 0.001
     }
 ]
