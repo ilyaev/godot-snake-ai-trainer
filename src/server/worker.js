@@ -279,9 +279,8 @@ ticker = setInterval(() => {
                 snake.loadLevel(nextRule.level)
             }
         }
-        if (snake.scene.result.epoch > 17000 && snake.scene.result.epoch - lastEpoch > 1000) {
+        if (snake.scene.result.epoch > 170000 && snake.scene.result.epoch - lastEpoch > 1000) {
             snake.loadLevel(levels[Math.floor(Math.random() * levels.length)])
-            snake.printField()
             lastEpoch = snake.scene.result.epoch
             const newE = Math.random() > 0.8 ? 0.001 : 0.01 + Math.random() * 0.1
             snake.scene.spec.epsilon = newE
