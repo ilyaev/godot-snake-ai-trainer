@@ -48,6 +48,10 @@ const createGame = (scene, name, state, params) => {
         scene.params.features = params.features
         scene.params.numStates = state.calculateMaxNumInputs(scene.params.features)
     }
+    if (params.level) {
+        console.log('--level: ', params.level)
+        scene.params.homelevel = params.level
+    }
     state.initAgents(
         {
             getNumStates: () => scene.params.numStates,

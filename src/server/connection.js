@@ -158,7 +158,7 @@ const connection = (io, socket) => {
 
     var sendServerStatus = (archived = false) => {
         sendCommand(socket, 'SERVER_STATUS', {
-            status: 'OK',
+            status: 'OK-',
             learningCycles: io.learningCycles,
             upTime: getTimeMSFloat() - io.started,
             timestamp: socket.lastPoll,
@@ -168,14 +168,20 @@ const connection = (io, socket) => {
                 .filter(one => io.storage.get(one).archive === archived)
                 .map(one => {
                     const worker = io.workers.get(one)
+                    const model = io.storage.get(one)
                     const res = {
                         name: one,
                         archive: io.storage.get(one).archive,
+                        spec: worker && worker.isActive() ? worker.getStatus().spec : model.spec,
+                        params: model.params,
                         worker: false
+                    }
+                    if (!res.spec) {
+                        res.spec = model.spec
                     }
                     if (worker && worker.isActive()) {
                         res.worker = {
-                            params: io.storage.get(one).params,
+                            params: model.params,
                             status: worker.getStatus(),
                             active: worker.isActive()
                         }

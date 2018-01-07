@@ -19,6 +19,49 @@ let curRule = {
 
 let lastEpoch = 0
 
+const hometrain = [
+    {
+        epoch: 5000,
+        id: 1,
+        epsilon: 0.5
+    },
+    {
+        epoch: 10000,
+        id: 2,
+        epsilon: 0.4
+    },
+    {
+        epoch: 15000,
+        id: 3,
+        epsilon: 0.3
+    },
+    {
+        epoch: 20000,
+        id: 4,
+        epsilon: 0.2
+    },
+    {
+        epoch: 30000,
+        id: 5,
+        epsilon: 0.1
+    },
+    {
+        epoch: 40000,
+        id: 6,
+        epsilon: 0.05
+    },
+    {
+        epoch: 50000,
+        id: 7,
+        epsilon: 0.02
+    },
+    {
+        epoch: 60000,
+        id: 8,
+        epsilon: 0.01
+    }
+]
+
 const curriculum = [
     {
         level: 'empty8x8',
@@ -221,7 +264,8 @@ let startLearning = function(cmd) {
     snake.scene.maxY = cmd.maxY
     snake.resizeTo(snake.scene.spec.size, snake.scene.spec.size)
     snake.scene.spec.rivals = (Math.floor(snake.scene.spec.size / 7) - 1) * 2
-    snake.loadLevel('empty8x8')
+    console.log(snake.scene.params)
+    snake.loadLevel(snake.scene.params.homelevel || 'empty8x8')
     if (cmd.start) {
         log('Learning Started - ' + snake.scene.agent.epsilon)
         run()
@@ -267,24 +311,36 @@ ticker = setInterval(() => {
         brain: snake.scene.agent.toJSON()
     })
     if (handler) {
-        const nextRule = curriculum.filter(one => one.epoch > snake.scene.result.epoch)[0]
-        if (nextRule && nextRule.id !== curRule.id) {
-            console.log(snake.scene.modelName + ': Apply rule: ', nextRule)
-            curRule = nextRule
-            if (nextRule.epsilon) {
-                snake.scene.spec.epsilon = nextRule.epsilon
-                snake.scene.agent.epsilon = nextRule.epsilon
+        if (snake.scene.params.homelevel) {
+            const nextRule = hometrain.filter(one => one.epoch > snake.scene.result.epoch)[0]
+            if (nextRule && nextRule.id !== curRule.id) {
+                console.log(snake.scene.modelName + ': Apply rule: ', nextRule)
+                curRule = nextRule
+                if (nextRule.epsilon) {
+                    snake.scene.spec.epsilon = nextRule.epsilon
+                    snake.scene.agent.epsilon = nextRule.epsilon
+                }
             }
-            if (nextRule.level) {
-                snake.loadLevel(nextRule.level)
+        } else {
+            const nextRule = curriculum.filter(one => one.epoch > snake.scene.result.epoch)[0]
+            if (nextRule && nextRule.id !== curRule.id) {
+                console.log(snake.scene.modelName + ': Apply rule: ', nextRule)
+                curRule = nextRule
+                if (nextRule.epsilon) {
+                    snake.scene.spec.epsilon = nextRule.epsilon
+                    snake.scene.agent.epsilon = nextRule.epsilon
+                }
+                if (nextRule.level) {
+                    snake.loadLevel(nextRule.level)
+                }
             }
-        }
-        if (snake.scene.result.epoch > 170000 && snake.scene.result.epoch - lastEpoch > 1000) {
-            snake.loadLevel(levels[Math.floor(Math.random() * levels.length)])
-            lastEpoch = snake.scene.result.epoch
-            const newE = Math.random() > 0.8 ? 0.001 : 0.01 + Math.random() * 0.1
-            snake.scene.spec.epsilon = newE
-            console.log('Switch to level: ' + snake.scene.level.name + ' / e: ' + newE)
+            if (snake.scene.result.epoch > 170000 && snake.scene.result.epoch - lastEpoch > 1000) {
+                snake.loadLevel(levels[Math.floor(Math.random() * levels.length)])
+                lastEpoch = snake.scene.result.epoch
+                const newE = Math.random() > 0.8 ? 0.001 : 0.01 + Math.random() * 0.1
+                snake.scene.spec.epsilon = newE
+                console.log('Switch to level: ' + snake.scene.level.name + ' / e: ' + newE)
+            }
         }
     }
 }, 1000)
