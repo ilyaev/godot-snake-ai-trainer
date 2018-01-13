@@ -3,6 +3,7 @@ var snake = require('../src/common/snake-scene').instance({
     test: true,
     onProgress: record => {
         console.log('progress!!', record)
+        snake.printField()
     }
 })
 
@@ -61,7 +62,7 @@ var run = function() {
     handler = setImmediate(run)
     const epoch = snake.scene.result.epoch
     if (epoch % 100 === 0) {
-        snake.scene.agent.epsilon = Math.max(0.005, 0.5 - 0.5 * epoch / 1000)
+        snake.scene.agent.epsilon = Math.max(0.001, 0.5 - 0.5 * epoch / 1000)
     }
 }
 

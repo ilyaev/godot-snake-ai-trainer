@@ -69,7 +69,7 @@ const config = {
         homelevel: '',
         features: [FEATURE_HEAD_COORDINATES, FEATURE_CLOSEST_FOOD_DICRECTION, FEATURE_VISION_CLOSE_RANGE]
     },
-    spec: { alpha: 0.02, epsilon: 0.5, learning_steps_per_iteration: 40, experience_size: 10000, gamma: 0.75, rivals: 0, size: 7 },
+    spec: { alpha: 0.02, epsilon: 0.5, learning_steps_per_iteration: 100, experience_size: 40000, gamma: 0.75, rivals: 0, size: 7 },
     actor: {
         x: 3,
         y: 3,
@@ -273,6 +273,9 @@ module.exports = {
         }
 
         const restartActor = (reward, reason) => {
+            if (instanceProps.test) {
+                console.log('RS:', reward, reason, scene.result.epoch, scene.actor.step, scene.actor.tail.length)
+            }
             const historyRecord = {
                 size: scene.actor.tail.length,
                 step: scene.actor.step,
@@ -568,16 +571,17 @@ module.exports = {
                     }
                     toRespawn = true
                     if (actor.student) {
-                        const availActions = actions.reduce((result, next) => {
-                            return isWall(scene.actor.x + next.dx, scene.actor.y + next.dy) ? result : result + 1
-                        }, 0)
-                        if (availActions > 0) {
-                            teachAgent(ownFood ? 10 : 1)
-                        } else {
-                            teachAgent(-10)
-                            restartActor(-1, 'corner')
-                            return
-                        }
+                        teachAgent(1)
+                        // const availActions = actions.reduce((result, next) => {
+                        //     return isWall(scene.actor.x + next.dx, scene.actor.y + next.dy) ? result : result + 1
+                        // }, 0)
+                        // if (availActions > 0) {
+                        //     teachAgent(ownFood ? 1 : 1)
+                        // } else {
+                        //     teachAgent(-10)
+                        //     restartActor(-1, 'corner')
+                        //     return
+                        // }
                     }
                 } else if (isWall(actor.x, actor.y)) {
                     if (actor.student) {
@@ -589,13 +593,17 @@ module.exports = {
                     }
                 } else {
                     if (actor.student) {
-                        const maxWithoutFood = Math.min(100, scene.maxX * scene.maxY) + actor.tail.length * 2
+                        const maxWithoutFood = Math.max(100, scene.maxX * scene.maxY / 3) + actor.tail.length * 2
 
                         if (actor.withoutFood > maxWithoutFood) {
-                            //teachAgent(-1)
-                            if (!shrinkSnake(actor)) {
-                                restartActor(-1, 'starve')
+                            teachAgent(-100)
+                            //teachAgent(0)
+                            //if (!shrinkSnake(actor)) {
+                            restartActor(-1, 'starve')
+                            if (instanceProps.test) {
+                                console.log('STARVE')
                             }
+                            //}
                         } else {
                             teachAgent(0)
                         }
