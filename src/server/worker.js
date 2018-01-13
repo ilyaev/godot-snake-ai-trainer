@@ -264,7 +264,6 @@ let startLearning = function(cmd) {
     snake.scene.maxY = cmd.maxY
     snake.resizeTo(snake.scene.spec.size, snake.scene.spec.size)
     snake.scene.spec.rivals = (Math.floor(snake.scene.spec.size / 7) - 1) * 2
-    console.log(snake.scene.params)
     snake.loadLevel(snake.scene.params.homelevel || 'empty8x8')
     if (cmd.start) {
         log('Learning Started - ' + snake.scene.agent.epsilon)
@@ -312,15 +311,15 @@ ticker = setInterval(() => {
     })
     if (handler) {
         if (snake.scene.params.homelevel) {
-            const nextRule = hometrain.filter(one => one.epoch > snake.scene.result.epoch)[0]
-            if (nextRule && nextRule.id !== curRule.id) {
-                console.log(snake.scene.modelName + ': Apply rule: ', nextRule)
-                curRule = nextRule
-                if (nextRule.epsilon) {
-                    snake.scene.spec.epsilon = nextRule.epsilon
-                    snake.scene.agent.epsilon = nextRule.epsilon
-                }
-            }
+            // const nextRule = hometrain.filter(one => one.epoch > snake.scene.result.epoch)[0]
+            // if (nextRule && nextRule.id !== curRule.id) {
+            //     console.log(snake.scene.modelName + ': Apply rule: ', nextRule)
+            //     curRule = nextRule
+            //     if (nextRule.epsilon) {
+            //         snake.scene.spec.epsilon = nextRule.epsilon
+            //         snake.scene.agent.epsilon = nextRule.epsilon
+            //     }
+            // }
         } else {
             const nextRule = curriculum.filter(one => one.epoch > snake.scene.result.epoch)[0]
             if (nextRule && nextRule.id !== curRule.id) {

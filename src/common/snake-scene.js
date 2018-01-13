@@ -102,7 +102,11 @@ const config = {
                 t: 0,
                 s: 0
             }
-        ]
+        ],
+        tail: {
+            size: 0,
+            epoch: 0
+        }
     },
     qvalues: {},
     history: [],
@@ -140,7 +144,9 @@ module.exports = {
         instanceProps = Object.assign(
             {
                 mode: 'server',
-                debug: true
+                debug: true,
+                test: false,
+                onProgress: false
             },
             instanceProps
         )
@@ -228,7 +234,7 @@ module.exports = {
             scene.result.wins = 0
             scene.result.step = 0
             scene.result.epoch = 0
-            restartActor(-1)
+            restartActor(-1, 'init')
             initRivals()
         }
 
@@ -266,12 +272,28 @@ module.exports = {
             scene.result.history[period] = scene.result.history[period].splice(-100)
         }
 
-        const restartActor = reward => {
-            scene.history.push({
+        const restartActor = (reward, reason) => {
+            const historyRecord = {
                 size: scene.actor.tail.length,
                 step: scene.actor.step,
                 epoch: scene.result.epoch
-            })
+            }
+
+            if (!scene.result.tail) {
+                scene.result.tail = {
+                    size: 0
+                }
+            }
+
+            if (historyRecord.size > scene.result.tail.size) {
+                scene.result.tail = historyRecord
+                if (instanceProps.onProgress) {
+                    var cb = instanceProps.onProgress
+                    cb(Object.assign({}, historyRecord, { e: scene.agent.epsilon }))
+                }
+            }
+
+            scene.history.push(historyRecord)
             scene.history = scene.history.splice(-1000)
             scene.actor = clone(scene.defaultActor)
             var place = getNextRivalPlace()
@@ -553,7 +575,7 @@ module.exports = {
                             teachAgent(ownFood ? 10 : 1)
                         } else {
                             teachAgent(-10)
-                            restartActor(-1)
+                            restartActor(-1, 'corner')
                             return
                         }
                     }
@@ -561,16 +583,18 @@ module.exports = {
                     if (actor.student) {
                         footer = 'WALL'
                         teachAgent(-1)
-                        restartActor(-1)
+                        restartActor(-1, 'wall')
                     } else {
                         actor.active = false
                     }
                 } else {
                     if (actor.student) {
-                        if (actor.withoutFood > Math.min(100, scene.maxX * (scene.maxY / 3)) + actor.tail.length * 2) {
+                        const maxWithoutFood = Math.min(100, scene.maxX * scene.maxY) + actor.tail.length * 2
+
+                        if (actor.withoutFood > maxWithoutFood) {
                             teachAgent(-1)
                             if (!shrinkSnake(actor)) {
-                                restartActor(-1)
+                                restartActor(-1, 'starve')
                             }
                         } else {
                             teachAgent(0)
@@ -694,7 +718,20 @@ module.exports = {
             walls,
             foods,
             initAgents,
-            implantBrain
+            implantBrain,
+            inputs: {
+                FEATURE_HEAD_COORDINATES,
+                FEATURE_CLOSEST_FOOD_DICRECTION,
+                FEATURE_TAIL_DIRECTION,
+                FEATURE_VISION_CLOSE_RANGE,
+                FEATURE_VISION_FAR_RANGE,
+                FEATURE_VISION_MID_RANGE,
+                FEATURE_TAIL_SIZE,
+                FEATURE_HUNGER,
+                FEATURE_FULL_MAP_4,
+                FEATURE_FULL_MAP_6,
+                FEATURE_CLOSEST_FOOD_ANGLE
+            }
         }
     }
 }
