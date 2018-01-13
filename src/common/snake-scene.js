@@ -592,7 +592,7 @@ module.exports = {
                         const maxWithoutFood = Math.min(100, scene.maxX * scene.maxY) + actor.tail.length * 2
 
                         if (actor.withoutFood > maxWithoutFood) {
-                            teachAgent(-1)
+                            //teachAgent(-1)
                             if (!shrinkSnake(actor)) {
                                 restartActor(-1, 'starve')
                             }

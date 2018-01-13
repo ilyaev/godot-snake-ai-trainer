@@ -404,5 +404,6 @@ const connection = (io, socket) => {
 module.exports = {
     connection,
     sendCommand,
-    getNow: getTimeMSFloat
+    getNow: getTimeMSFloat,
+    createWorker
 }
