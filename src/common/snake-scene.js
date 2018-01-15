@@ -586,7 +586,7 @@ module.exports = {
                 } else if (isWall(actor.x, actor.y)) {
                     if (actor.student) {
                         footer = 'WALL'
-                        teachAgent(-1)
+                        teachAgent(-100)
                         restartActor(-1, 'wall')
                     } else {
                         actor.active = false
