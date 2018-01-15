@@ -571,7 +571,7 @@ module.exports = {
                     }
                     toRespawn = true
                     if (actor.student) {
-                        teachAgent(1)
+                        teachAgent(actor.withoutFood * 2)
                         // const availActions = actions.reduce((result, next) => {
                         //     return isWall(scene.actor.x + next.dx, scene.actor.y + next.dy) ? result : result + 1
                         // }, 0)
@@ -594,7 +594,7 @@ module.exports = {
                 } else {
                     if (actor.student) {
                         const maxWithoutFood = Math.max(100, scene.maxX * scene.maxY / 3) + actor.tail.length * 2
-                        teachAgent(-1)
+                        teachAgent(-1 * actor.withoutFood)
                         if (actor.withoutFood > maxWithoutFood) {
                             restartActor(-1, 'starve')
                             if (instanceProps.test) {
