@@ -274,7 +274,8 @@ module.exports = {
 
         const restartActor = (reward, reason) => {
             if (instanceProps.test) {
-                console.log('RS:', reward, reason, scene.result.epoch, scene.actor.step, scene.actor.tail.length, scene.agent.epsilon)
+                scene.actor.tail.length > 2 &&
+                    console.log('RS:', reward, reason, scene.result.epoch, scene.actor.step, scene.actor.tail.length, scene.agent.epsilon)
             }
             const historyRecord = {
                 size: scene.actor.tail.length,
@@ -586,7 +587,7 @@ module.exports = {
                 } else if (isWall(actor.x, actor.y)) {
                     if (actor.student) {
                         footer = 'WALL'
-                        teachAgent(-1000)
+                        teachAgent(-1)
                         restartActor(-1, 'wall')
                     } else {
                         actor.active = false
@@ -597,12 +598,15 @@ module.exports = {
                         const toFood = Math.sqrt(
                             Math.pow(scene.actor.target.x - scene.actor.x, 2) + Math.pow(scene.actor.target.y - scene.actor.y, 2)
                         )
-                        teachAgent(-1 * toFood) //(-0.1) // * toFood) // * actor.withoutFood)
+                        //-1 * toFood) //(-0.1) // * toFood) // * actor.withoutFood)
                         if (actor.withoutFood > maxWithoutFood) {
                             restartActor(-1, 'starve')
+                            teachAgent(-1)
                             if (instanceProps.test) {
                                 console.log('STARVE')
                             }
+                        } else {
+                            teachAgent(0)
                         }
                     }
                 }
