@@ -274,7 +274,7 @@ module.exports = {
 
         const restartActor = (reward, reason) => {
             if (instanceProps.test) {
-                console.log('RS:', reward, reason, scene.result.epoch, scene.actor.step, scene.actor.tail.length)
+                console.log('RS:', reward, reason, scene.result.epoch, scene.actor.step, scene.actor.tail.length, scene.agent.epsilon)
             }
             const historyRecord = {
                 size: scene.actor.tail.length,
@@ -594,18 +594,12 @@ module.exports = {
                 } else {
                     if (actor.student) {
                         const maxWithoutFood = Math.max(100, scene.maxX * scene.maxY / 3) + actor.tail.length * 2
-
+                        teachAgent(-1)
                         if (actor.withoutFood > maxWithoutFood) {
-                            teachAgent(-100)
-                            //teachAgent(0)
-                            //if (!shrinkSnake(actor)) {
                             restartActor(-1, 'starve')
                             if (instanceProps.test) {
                                 console.log('STARVE')
                             }
-                            //}
-                        } else {
-                            teachAgent(0)
                         }
                     }
                 }
