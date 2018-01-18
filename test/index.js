@@ -7,11 +7,7 @@ var snake = require('../src/common/snake-scene').instance({
     }
 })
 
-var features = [
-    snake.inputs.FEATURE_HEAD_COORDINATES,
-    snake.inputs.FEATURE_CLOSEST_FOOD_DICRECTION,
-    snake.inputs.FEATURE_VISION_CLOSE_RANGE
-]
+var features = [snake.inputs.FEATURE_CLOSEST_FOOD_DICRECTION, snake.inputs.FEATURE_FULL_MAP_6]
 
 var handler = false
 var counter = 0
@@ -19,8 +15,7 @@ var cmd = {
     spec: {
         alpha: 0.02,
         epsilon: 0.5,
-        learning_steps_per_iteration: 40,
-        experience_size: 10000,
+        numHiddenUnits: 100,
         gamma: 0.75,
         rivals: 0,
         size: 7
@@ -62,7 +57,7 @@ var run = function() {
     handler = setImmediate(run)
     const epoch = snake.scene.result.epoch
     if (epoch % 100 === 0) {
-        snake.scene.agent.epsilon = Math.max(0.001, 0.5 - 0.5 * epoch / 1000)
+        snake.scene.agent.epsilon = Math.max(0.01, 0.5 - 0.5 * epoch / 1000)
     }
 }
 

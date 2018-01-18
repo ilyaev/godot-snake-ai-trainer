@@ -69,7 +69,16 @@ const config = {
         homelevel: '',
         features: [FEATURE_HEAD_COORDINATES, FEATURE_CLOSEST_FOOD_DICRECTION, FEATURE_VISION_CLOSE_RANGE]
     },
-    spec: { alpha: 0.02, epsilon: 0.5, learning_steps_per_iteration: 100, experience_size: 40000, gamma: 0.75, rivals: 0, size: 7 },
+    spec: {
+        alpha: 0.02,
+        epsilon: 0.5,
+        learningStepsPerIteration: 20,
+        experienceSize: 10000,
+        gamma: 0.9,
+        rivals: 0,
+        size: 7,
+        experienceAddEvery: 1
+    },
     actor: {
         x: 3,
         y: 3,
@@ -587,7 +596,7 @@ module.exports = {
                 } else if (isWall(actor.x, actor.y)) {
                     if (actor.student) {
                         footer = 'WALL'
-                        teachAgent(-1)
+                        teachAgent(-10)
                         restartActor(-1, 'wall')
                     } else {
                         actor.active = false
@@ -595,13 +604,13 @@ module.exports = {
                 } else {
                     if (actor.student) {
                         const maxWithoutFood = Math.max(100, scene.maxX * scene.maxY / 3) + actor.tail.length * 2
-                        const toFood = Math.sqrt(
-                            Math.pow(scene.actor.target.x - scene.actor.x, 2) + Math.pow(scene.actor.target.y - scene.actor.y, 2)
-                        )
+                        // const toFood = Math.sqrt(
+                        //     Math.pow(scene.actor.target.x - scene.actor.x, 2) + Math.pow(scene.actor.target.y - scene.actor.y, 2)
+                        // )
                         //-1 * toFood) //(-0.1) // * toFood) // * actor.withoutFood)
                         if (actor.withoutFood > maxWithoutFood) {
                             restartActor(-1, 'starve')
-                            teachAgent(-1)
+                            teachAgent(-10)
                             if (instanceProps.test) {
                                 console.log('STARVE')
                             }
