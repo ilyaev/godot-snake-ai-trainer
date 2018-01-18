@@ -559,7 +559,14 @@ module.exports = {
                 //console.log(scene.params.features, calculateMaxNumInputs(scene.params.features))
                 //console.log(stepState.map(one => Math.round(one * 100) / 100))
 
-                var action = actor.student ? scene.agent.act(stepState) : scene.rivalAgent.act(stepState)
+                const availActions = actions.reduce((result, next, index) => {
+                    if (!isWall(actor.x + next.dx, actor.y + next.dy)) {
+                        result.push(index)
+                    }
+                    return result
+                }, [])
+
+                var action = actor.student ? scene.agent.act(stepState, availActions) : scene.rivalAgent.act(stepState, availActions)
                 var act = actions[action]
 
                 var prev = {

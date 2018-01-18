@@ -2,7 +2,7 @@ module.exports = {
     levels: [
         { walls: [], maxFood: 1, maxX: 8, maxY: 8, pits: [], name: 'empty8x8' },
         { walls: [], maxFood: 1, maxX: 15, maxY: 15, pits: [], name: 'empty16x16' },
-        { walls: [], maxFood: 3, maxX: 32, maxY: 32, pits: [], name: 'empty32x32' },
+        { walls: [], maxFood: 1, maxX: 32, maxY: 32, pits: [], name: 'empty32x32' },
         {
             walls: [
                 { x: 5, y: 6 },
@@ -22,7 +22,7 @@ module.exports = {
                 { x: 10, y: 10 },
                 { x: 11, y: 10 }
             ],
-            maxFood: 5,
+            maxFood: 1,
             maxX: 15,
             maxY: 15,
             pits: [],
