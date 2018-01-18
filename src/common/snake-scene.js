@@ -166,6 +166,9 @@ module.exports = {
         var walls = {}
         var foods = {}
 
+        var turns = []
+        const maxTurns = 1000
+
         const getActiveActors = () => {
             return [scene.actor].concat(scene.rivals).filter(one => typeof one.active === 'undefined' || one.active)
         }
@@ -285,6 +288,9 @@ module.exports = {
             if (instanceProps.test) {
                 scene.actor.tail.length > 2 &&
                     console.log('RS:', reward, reason, scene.result.epoch, scene.actor.step, scene.actor.tail.length, scene.agent.epsilon)
+                if (reason.indexOf('cycle') !== -1) {
+                    console.log(reason, ' l: ' + scene.actor.tail.length)
+                }
             }
             const historyRecord = {
                 size: scene.actor.tail.length,
@@ -545,6 +551,40 @@ module.exports = {
             }
         }
 
+        const isStudentInCycle = () => {
+            var result = 0
+            ;[4, 5, 6, 7, 8, 9, 10].forEach(len => {
+                var cycles = 2
+                if (!result && turns.length > cycles * len) {
+                    var parts = turns.slice(-len * cycles)
+                    var chunk = []
+                    var chunks = parts.reduce((result, next, index) => {
+                        if (index % len == 0) {
+                            if (index > 0) {
+                                result.push(chunk)
+                            }
+                            chunk = []
+                        }
+                        chunk += next
+                        return result
+                    }, [])
+                    chunks.push(chunk)
+                    var flag = true
+                    var next = chunks[0]
+                    chunks.forEach(one => {
+                        if (one !== next) {
+                            flag = false
+                        }
+                    })
+                    if (flag) {
+                        result = len
+                    }
+                }
+            })
+
+            return result
+        }
+
         const nextStep = () => {
             scene.result.step++
             scene.actor.step += 1
@@ -576,6 +616,13 @@ module.exports = {
 
                 actor.x += act.dx
                 actor.y += act.dy
+
+                turns.push(actor.x + '-' + actor.y)
+                if (turns.length > maxTurns) {
+                    turns = turns.slice(-maxTurns / 10)
+                }
+
+                const isCycled = isStudentInCycle()
 
                 if (!actor.target) {
                     actor.target = scene.target
@@ -614,7 +661,12 @@ module.exports = {
                                 console.log('STARVE')
                             }
                         } else {
-                            teachAgent(0)
+                            if (isCycled > 0) {
+                                teachAgent(-10)
+                                restartActor(-1, 'cycle: ' + isCycled)
+                            } else {
+                                teachAgent(-0.1)
+                            }
                         }
                     }
                 }
