@@ -20,6 +20,11 @@ const academy = require('./levels')
 
 const binmap = [1, 2, 4, 8, 16, 32, 64, 128]
 
+const foodPolicy = {
+    initialRadius: 4,
+    growSpeed: 200
+}
+
 const featureMap = {
     [FEATURE_HEAD_COORDINATES]: {
         inputs: 2
@@ -341,6 +346,13 @@ module.exports = {
             while (wall == true) {
                 x = Math.round(Math.random() * scene.maxX)
                 y = Math.round(Math.random() * scene.maxY)
+
+                if (instanceProps.mode === 'server') {
+                    var range = foodPolicy.initialRadius + Math.round(scene.result.epoch / foodPolicy.growSpeed)
+                    x = Math.round(Math.random() * range * 2 - range / 2) + scene.actor.x
+                    y = Math.round(Math.random() * range * 2 - range / 2) + scene.actor.y
+                }
+
                 wall = isWall(x, y)
                 if (!wall) {
                     wall = isFood(x, y)
@@ -553,7 +565,7 @@ module.exports = {
 
         const isStudentInCycle = () => {
             var result = 0
-            ;[4, 5, 6, 7, 8, 9, 10].forEach(len => {
+            ;[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].forEach(len => {
                 var cycles = 2
                 if (!result && turns.length > cycles * len) {
                     var parts = turns.slice(-len * cycles)
@@ -596,8 +608,6 @@ module.exports = {
 
                 var toRespawn = false
                 const stepState = buildState(actor)
-                //console.log(scene.params.features, calculateMaxNumInputs(scene.params.features))
-                //console.log(stepState.map(one => Math.round(one * 100) / 100))
 
                 const availActions = actions.reduce((result, next, index) => {
                     if (!isWall(actor.x + next.dx, actor.y + next.dy)) {
@@ -622,7 +632,7 @@ module.exports = {
                     turns = turns.slice(-maxTurns / 10)
                 }
 
-                const isCycled = isStudentInCycle()
+                const isCycled = scene.result.step % 4 == 0 ? isStudentInCycle() : false
 
                 if (!actor.target) {
                     actor.target = scene.target
