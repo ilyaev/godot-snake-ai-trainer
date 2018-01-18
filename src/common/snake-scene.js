@@ -608,8 +608,8 @@ module.exports = {
                     if (actor.student) {
                         const maxWithoutFood = Math.max(100, scene.maxX * scene.maxY / 3) + actor.tail.length * 2
                         if (actor.withoutFood > maxWithoutFood) {
-                            restartActor(-1, 'starve')
                             teachAgent(-10)
+                            restartActor(-1, 'starve')
                             if (instanceProps.test) {
                                 console.log('STARVE')
                             }
