@@ -477,6 +477,8 @@ module.exports = {
             return rows.map(one => one / 256)
         }
 
+        const limitDistanceToFood = (dist, limit = 8) => Math.min(limit, Math.max(dist, -1 * limit))
+
         const buildState = actor => {
             let result = []
             scene.params.features.map(one => parseInt(one)).forEach(feature => {
@@ -487,11 +489,15 @@ module.exports = {
                         break
                     case FEATURE_CLOSEST_FOOD_DICRECTION:
                         if (actor.target) {
-                            result.push((actor.target.x - actor.x) / scene.maxX)
-                            result.push((actor.target.y - actor.y) / scene.maxY)
+                            // result.push((actor.target.x - actor.x) / scene.maxX)
+                            // result.push((actor.target.y - actor.y) / scene.maxY)
+                            result.push(limitDistanceToFood(actor.target.x - actor.x) / 8)
+                            result.push(limitDistanceToFood(actor.target.y - actor.y) / 8)
                         } else {
-                            result.push((scene.target.x - actor.x) / scene.maxX)
-                            result.push((scene.target.y - actor.y) / scene.maxY)
+                            // result.push((scene.target.x - actor.x) / scene.maxX)
+                            // result.push((scene.target.y - actor.y) / scene.maxY)
+                            result.push(limitDistanceToFood(scene.target.x - actor.x) / 8)
+                            result.push(limitDistanceToFood(scene.target.y - actor.y) / 8)
                         }
                         break
                     case FEATURE_CLOSEST_FOOD_ANGLE:
@@ -581,17 +587,7 @@ module.exports = {
                     }
                     toRespawn = true
                     if (actor.student) {
-                        teachAgent(1) //000) //actor.withoutFood * 2)
-                        // const availActions = actions.reduce((result, next) => {
-                        //     return isWall(scene.actor.x + next.dx, scene.actor.y + next.dy) ? result : result + 1
-                        // }, 0)
-                        // if (availActions > 0) {
-                        //     teachAgent(ownFood ? 1 : 1)
-                        // } else {
-                        //     teachAgent(-10)
-                        //     restartActor(-1, 'corner')
-                        //     return
-                        // }
+                        teachAgent(1)
                     }
                 } else if (isWall(actor.x, actor.y)) {
                     if (actor.student) {
@@ -604,10 +600,6 @@ module.exports = {
                 } else {
                     if (actor.student) {
                         const maxWithoutFood = Math.max(100, scene.maxX * scene.maxY / 3) + actor.tail.length * 2
-                        // const toFood = Math.sqrt(
-                        //     Math.pow(scene.actor.target.x - scene.actor.x, 2) + Math.pow(scene.actor.target.y - scene.actor.y, 2)
-                        // )
-                        //-1 * toFood) //(-0.1) // * toFood) // * actor.withoutFood)
                         if (actor.withoutFood > maxWithoutFood) {
                             restartActor(-1, 'starve')
                             teachAgent(-10)
