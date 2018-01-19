@@ -565,7 +565,7 @@ module.exports = {
             }
         }
 
-        isStudenInCycleValue = len => {
+        const isStudenInCycleValue = len => {
             var cycles = 2
             var result = 0
             if (turns.length > cycles * len) {
