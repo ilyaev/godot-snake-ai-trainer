@@ -297,6 +297,7 @@ module.exports = {
                     console.log(reason, ' l: ' + scene.actor.tail.length)
                 }
             }
+            //console.log(reason, ' l: ' + scene.actor.tail.length)
             const historyRecord = {
                 size: scene.actor.tail.length,
                 step: scene.actor.step,
@@ -666,7 +667,7 @@ module.exports = {
                 } else if (isWall(actor.x, actor.y)) {
                     if (actor.student) {
                         footer = 'WALL'
-                        teachAgent(-10)
+                        teachAgent(-maxLen * 2)
                         restartActor(-1, 'wall')
                     } else {
                         actor.active = false
@@ -690,7 +691,7 @@ module.exports = {
                                     Math.pow(scene.actor.x - scene.actor.target.x, 2) + Math.pow(scene.actor.y - scene.actor.target.y, 2)
                                 )
                                 //console.log('tf', maxLen - toFood)
-                                teachAgent((maxLen - toFood) / 10)
+                                teachAgent((maxLen - toFood) / 100)
                                 //teachAgent()
                             }
                         }
