@@ -692,7 +692,8 @@ module.exports = {
                                 // )
                                 //console.log('tf', maxLen - toFood)
                                 // teachAgent((maxLen - toFood) / maxLen)
-                                teachAgent(0)
+                                teachAgent((toFood - 1) / maxLen * -1)
+                                //teachAgent(-0.5)
                             }
                         }
                     }
