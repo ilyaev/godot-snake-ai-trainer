@@ -343,11 +343,13 @@ module.exports = {
         const getNextFood = () => {
             var wall = true
             var x, y
+            var tries = 0
             while (wall == true) {
+                tries++
                 x = Math.round(Math.random() * scene.maxX)
                 y = Math.round(Math.random() * scene.maxY)
 
-                if (instanceProps.mode === 'server') {
+                if (instanceProps.mode === 'server' && tries < 50) {
                     var range = foodPolicy.initialRadius + Math.round(scene.result.epoch / foodPolicy.growSpeed)
                     x = Math.round(Math.random() * range * 2 - range / 2) + scene.actor.x
                     y = Math.round(Math.random() * range * 2 - range / 2) + scene.actor.y
@@ -563,37 +565,34 @@ module.exports = {
             }
         }
 
-        const isStudentInCycle = () => {
+        isStudenInCycleValue = len => {
+            var cycles = 2
             var result = 0
-            ;[4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].forEach(len => {
-                var cycles = 2
-                if (!result && turns.length > cycles * len) {
-                    var parts = turns.slice(-len * cycles)
-                    var chunk = []
-                    var chunks = parts.reduce((result, next, index) => {
-                        if (index % len == 0) {
-                            if (index > 0) {
-                                result.push(chunk)
-                            }
-                            chunk = []
+            if (turns.length > cycles * len) {
+                var parts = turns.slice(-len * cycles)
+                var chunk = []
+                var chunks = parts.reduce((result, next, index) => {
+                    if (index % len == 0) {
+                        if (index > 0) {
+                            result.push(chunk)
                         }
-                        chunk += next
-                        return result
-                    }, [])
-                    chunks.push(chunk)
-                    var flag = true
-                    var next = chunks[0]
-                    chunks.forEach(one => {
-                        if (one !== next) {
-                            flag = false
-                        }
-                    })
-                    if (flag) {
-                        result = len
+                        chunk = []
                     }
+                    chunk += next
+                    return result
+                }, [])
+                chunks.push(chunk)
+                var flag = true
+                var next = chunks[0]
+                chunks.forEach(one => {
+                    if (one !== next) {
+                        flag = false
+                    }
+                })
+                if (flag) {
+                    result = len
                 }
-            })
-
+            }
             return result
         }
 
@@ -632,7 +631,12 @@ module.exports = {
                     turns = turns.slice(-maxTurns / 10)
                 }
 
-                const isCycled = scene.result.step % 4 == 0 ? isStudentInCycle() : false
+                var isCycled = 0
+                for (var cycleLen = 4; cycleLen <= 100; cycleLen++) {
+                    if (!isCycled && scene.result.step % cycleLen == 0) {
+                        isCycled = isStudenInCycleValue(cycleLen)
+                    }
+                }
 
                 if (!actor.target) {
                     actor.target = scene.target
