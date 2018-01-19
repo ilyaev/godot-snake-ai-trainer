@@ -75,14 +75,14 @@ const config = {
         features: [FEATURE_HEAD_COORDINATES, FEATURE_CLOSEST_FOOD_DICRECTION, FEATURE_VISION_CLOSE_RANGE]
     },
     spec: {
-        alpha: 0.02,
-        epsilon: 0.5,
-        learningStepsPerIteration: 20,
+        alpha: 0.03,
+        epsilon: 0.33,
+        learningStepsPerIteration: 10,
         experienceSize: 10000,
-        gamma: 0.9,
+        gamma: 0.75,
         rivals: 0,
         size: 7,
-        experienceAddEvery: 1
+        experienceAddEvery: 2
     },
     actor: {
         x: 3,
@@ -662,12 +662,12 @@ module.exports = {
                     }
                     toRespawn = true
                     if (actor.student) {
-                        teachAgent(maxLen) //1 * Math.round(scene.maxX / 8))
+                        teachAgent(1) //1 * Math.round(scene.maxX / 8))
                     }
                 } else if (isWall(actor.x, actor.y)) {
                     if (actor.student) {
                         footer = 'WALL'
-                        teachAgent(-maxLen * 2)
+                        teachAgent(-1)
                         restartActor(-1, 'wall')
                     } else {
                         actor.active = false
@@ -676,23 +676,23 @@ module.exports = {
                     if (actor.student) {
                         const maxWithoutFood = Math.max(100, scene.maxX * scene.maxY / 3) + actor.tail.length * 2
                         if (actor.withoutFood > maxWithoutFood) {
-                            teachAgent(-maxLen)
+                            teachAgent(-1)
                             restartActor(-1, 'starve')
                             if (instanceProps.test) {
                                 console.log('STARVE')
                             }
                         } else {
                             if (isCycled > 0) {
-                                teachAgent(-maxLen)
+                                teachAgent(-1)
                                 restartActor(-1, 'cycle: ' + isCycled)
                             } else {
                                 //teachAgent(-0.01)
-                                const toFood = Math.sqrt(
-                                    Math.pow(scene.actor.x - scene.actor.target.x, 2) + Math.pow(scene.actor.y - scene.actor.target.y, 2)
-                                )
+                                // const toFood = Math.sqrt(
+                                //     Math.pow(scene.actor.x - scene.actor.target.x, 2) + Math.pow(scene.actor.y - scene.actor.target.y, 2)
+                                // )
                                 //console.log('tf', maxLen - toFood)
-                                teachAgent((maxLen - toFood) / 100)
-                                //teachAgent()
+                                // teachAgent((maxLen - toFood) / maxLen)
+                                teachAgent(0)
                             }
                         }
                     }
