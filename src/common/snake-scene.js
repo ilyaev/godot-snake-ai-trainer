@@ -690,7 +690,7 @@ module.exports = {
                                     Math.pow(scene.actor.x - scene.actor.target.x, 2) + Math.pow(scene.actor.y - scene.actor.target.y, 2)
                                 )
                                 //console.log('tf', maxLen - toFood)
-                                teachAgent(maxLen - toFood)
+                                teachAgent((maxLen - toFood) / 10)
                                 //teachAgent()
                             }
                         }
