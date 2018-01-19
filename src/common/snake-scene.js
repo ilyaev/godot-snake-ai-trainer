@@ -687,9 +687,9 @@ module.exports = {
                                 restartActor(-1, 'cycle: ' + isCycled)
                             } else {
                                 //teachAgent(-0.01)
-                                // const toFood = Math.sqrt(
-                                //     Math.pow(scene.actor.x - scene.actor.target.x, 2) + Math.pow(scene.actor.y - scene.actor.target.y, 2)
-                                // )
+                                const toFood = Math.sqrt(
+                                    Math.pow(scene.actor.x - scene.actor.target.x, 2) + Math.pow(scene.actor.y - scene.actor.target.y, 2)
+                                )
                                 //console.log('tf', maxLen - toFood)
                                 // teachAgent((maxLen - toFood) / maxLen)
                                 teachAgent((toFood - 1) / maxLen * -1)
