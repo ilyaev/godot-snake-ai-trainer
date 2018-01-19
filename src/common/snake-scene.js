@@ -6,7 +6,7 @@ const generateID = () => Math.round(Math.random() * 100000)
 const randNum = num => Math.floor(Math.random() * num)
 
 const FEATURE_HEAD_COORDINATES = 1
-const FEATURE_CLOSEST_FOOD_DICRECTION = 4
+const FEATURE_CLOSEST_FOOD_DICRECTION = 2
 const FEATURE_TAIL_DIRECTION = 3
 const FEATURE_VISION_CLOSE_RANGE = 4
 const FEATURE_VISION_FAR_RANGE = 5
@@ -30,7 +30,7 @@ const featureMap = {
         inputs: 2
     },
     [FEATURE_CLOSEST_FOOD_DICRECTION]: {
-        inputs: 2
+        inputs: 4
     },
     [FEATURE_CLOSEST_FOOD_ANGLE]: {
         inputs: 1
