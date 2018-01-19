@@ -555,7 +555,9 @@ module.exports = {
                         result.push(actor.tail.length / scene.maxX * (scene.maxY / 3) - 0.5)
                         break
                     case FEATURE_HUNGER:
-                        result.push(actor.withoutFood ? actor.withoutFood / scene.maxX * (scene.maxX / 2) - 0.5 : 0)
+                        const maxWithoutFood = actor.tail.length * 3
+                        const hunger = Math.min(1, actor.withoutFood / maxWithoutFood) - 0.5
+                        result.push(hunger)
                         break
                     default:
                         break
@@ -687,13 +689,13 @@ module.exports = {
                                 restartActor(-1, 'cycle: ' + isCycled)
                             } else {
                                 //teachAgent(-0.01)
-                                const toFood = Math.sqrt(
-                                    Math.pow(scene.actor.x - scene.actor.target.x, 2) + Math.pow(scene.actor.y - scene.actor.target.y, 2)
-                                )
+                                // const toFood = Math.sqrt(
+                                //     Math.pow(scene.actor.x - scene.actor.target.x, 2) + Math.pow(scene.actor.y - scene.actor.target.y, 2)
+                                // )
                                 //console.log('tf', maxLen - toFood)
                                 // teachAgent((maxLen - toFood) / maxLen)
-                                teachAgent((toFood - 1) / maxLen * -1)
-                                //teachAgent(-0.5)
+                                //teachAgent((toFood - 1) / maxLen * -1)
+                                teachAgent(-0.1)
                             }
                         }
                     }

@@ -7,7 +7,7 @@ var snake = require('../src/common/snake-scene').instance({
     }
 })
 
-var features = [snake.inputs.FEATURE_CLOSEST_FOOD_DICRECTION, snake.inputs.FEATURE_FULL_MAP_6]
+var features = [snake.inputs.FEATURE_CLOSEST_FOOD_DICRECTION, snake.inputs.FEATURE_FULL_MAP_6, snake.inputs.FEATURE_HUNGER]
 
 var handler = false
 var counter = 0
