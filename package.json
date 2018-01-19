@@ -15,7 +15,8 @@
         "postinstall": "webpack --progress --display-error-details && cp src/index.html dist/index.html && chmod 777 src/models",
         "export": "node ./export.js model",
         "tezt": "node ./test/index.js",
-        "logs": "heroku logs -t"
+        "logs": "heroku logs -t",
+        "deploy": "git add . && git commit -m 'chore: publish to heroku' && git push origin/master"
     },
     "dependencies": {
         "babel-core": "^6.21.0",

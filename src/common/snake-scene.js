@@ -6,7 +6,7 @@ const generateID = () => Math.round(Math.random() * 100000)
 const randNum = num => Math.floor(Math.random() * num)
 
 const FEATURE_HEAD_COORDINATES = 1
-const FEATURE_CLOSEST_FOOD_DICRECTION = 2
+const FEATURE_CLOSEST_FOOD_DICRECTION = 4
 const FEATURE_TAIL_DIRECTION = 3
 const FEATURE_VISION_CLOSE_RANGE = 4
 const FEATURE_VISION_FAR_RANGE = 5
@@ -511,13 +511,17 @@ module.exports = {
                         if (actor.target) {
                             // result.push((actor.target.x - actor.x) / scene.maxX)
                             // result.push((actor.target.y - actor.y) / scene.maxY)
-                            result.push(limitDistanceToFood(actor.target.x - actor.x) / 8)
-                            result.push(limitDistanceToFood(actor.target.y - actor.y) / 8)
+                            result.push(1 - limitDistanceToFood(actor.target.x - actor.x) / 8)
+                            result.push(1 - limitDistanceToFood(actor.target.y - actor.y) / 8)
+                            result.push(1 - (actor.target.x - actor.x) / scene.maxX)
+                            result.push(1 - (actor.target.y - actor.y) / scene.maxY)
                         } else {
                             // result.push((scene.target.x - actor.x) / scene.maxX)
                             // result.push((scene.target.y - actor.y) / scene.maxY)
-                            result.push(limitDistanceToFood(scene.target.x - actor.x) / 8)
-                            result.push(limitDistanceToFood(scene.target.y - actor.y) / 8)
+                            result.push(1 - limitDistanceToFood(scene.target.x - actor.x) / 8)
+                            result.push(1 - limitDistanceToFood(scene.target.y - actor.y) / 8)
+                            result.push(1 - (scene.target.x - actor.x) / scene.maxX)
+                            result.push(1 - (scene.target.y - actor.y) / scene.maxY)
                         }
                         break
                     case FEATURE_CLOSEST_FOOD_ANGLE:
