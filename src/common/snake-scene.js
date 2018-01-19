@@ -655,7 +655,7 @@ module.exports = {
                     }
                     toRespawn = true
                     if (actor.student) {
-                        teachAgent(1)
+                        teachAgent(1 * Math.round(scene.maxX / 8))
                     }
                 } else if (isWall(actor.x, actor.y)) {
                     if (actor.student) {
@@ -679,7 +679,7 @@ module.exports = {
                                 teachAgent(-10)
                                 restartActor(-1, 'cycle: ' + isCycled)
                             } else {
-                                teachAgent(-0.1)
+                                teachAgent(-0.01)
                             }
                         }
                     }
