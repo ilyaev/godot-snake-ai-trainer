@@ -600,6 +600,8 @@ module.exports = {
             return result
         }
 
+        const maxLen = Math.sqrt(scene.maxX * scene.maxX + scene.maxY * scene.maxY)
+
         const nextStep = () => {
             scene.result.step++
             scene.actor.step += 1
@@ -659,7 +661,7 @@ module.exports = {
                     }
                     toRespawn = true
                     if (actor.student) {
-                        teachAgent(1 * Math.round(scene.maxX / 8))
+                        teachAgent(maxLen) //1 * Math.round(scene.maxX / 8))
                     }
                 } else if (isWall(actor.x, actor.y)) {
                     if (actor.student) {
@@ -673,17 +675,23 @@ module.exports = {
                     if (actor.student) {
                         const maxWithoutFood = Math.max(100, scene.maxX * scene.maxY / 3) + actor.tail.length * 2
                         if (actor.withoutFood > maxWithoutFood) {
-                            teachAgent(-10)
+                            teachAgent(-maxLen)
                             restartActor(-1, 'starve')
                             if (instanceProps.test) {
                                 console.log('STARVE')
                             }
                         } else {
                             if (isCycled > 0) {
-                                teachAgent(-10)
+                                teachAgent(-maxLen)
                                 restartActor(-1, 'cycle: ' + isCycled)
                             } else {
-                                teachAgent(-0.01)
+                                //teachAgent(-0.01)
+                                const toFood = Math.sqrt(
+                                    Math.pow(scene.actor.x - scene.actor.target.x, 2) + Math.pow(scene.actor.y - scene.actor.target.y, 2)
+                                )
+                                //console.log('tf', maxLen - toFood)
+                                teachAgent(maxLen - toFood)
+                                //teachAgent()
                             }
                         }
                     }
