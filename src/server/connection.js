@@ -334,12 +334,19 @@ const connection = (io, socket) => {
                             if (cmd.name !== arena.getScene().modelName) {
                                 console.log('Offlien update model: ', cmd.name, cmd.form)
                                 const model = io.storage.get(cmd.name)
+                                const worker = io.workers.get(cmd.name)
                                 if (model) {
                                     model.spec = Object.assign({}, model.spec, cmd.form)
                                     if (cmd.form.level) {
                                         model.params.homelevel = cmd.form.level
                                     }
                                     io.storage.set(cmd.name, model)
+                                    if (worker) {
+                                        worker.command({
+                                            cmd: 'spec',
+                                            value: model.spec
+                                        })
+                                    }
                                     io.storage.flush(cmd.name)
                                 }
                             } else {

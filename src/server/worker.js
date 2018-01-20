@@ -229,12 +229,16 @@ let updateSpec = function(cmd) {
     snake.scene.agent.experienceAddEvery = cmd.value.learning_steps_per_iteration
     if (cmd.value.level && cmd.value.level !== snake.scene.params.homelevel) {
         snake.scene.params.homelevel = cmd.value.level
-        clearImmediate(handler)
-        setTimeout(() => {
-            console.log('-Change Level To: ', snake.scene.params.homelevel)
+        if (handler) {
+            clearImmediate(handler)
+            setTimeout(() => {
+                console.log('-Change Level To: ', snake.scene.params.homelevel)
+                snake.loadLevel(snake.scene.params.homelevel || 'empty8x8')
+                run()
+            }, 100)
+        } else {
             snake.loadLevel(snake.scene.params.homelevel || 'empty8x8')
-            run()
-        }, 100)
+        }
     }
 }
 

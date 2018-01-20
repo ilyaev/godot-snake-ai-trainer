@@ -189,6 +189,8 @@ const arena = (io, socket) => {
                 brain: scene.agent.toJSON()
             }
         )
+        scene.params = model.params
+        scene.spec = model.spec
         io.storage.set(scene.modelName, model)
     }
 
