@@ -685,7 +685,7 @@ module.exports = {
                             }
                         } else {
                             if (isCycled > 0) {
-                                teachAgent(-1)
+                                teachAgent(-100)
                                 restartActor(-1, 'cycle: ' + isCycled)
                             } else {
                                 //teachAgent(-0.01)

@@ -336,6 +336,9 @@ const connection = (io, socket) => {
                                 const model = io.storage.get(cmd.name)
                                 if (model) {
                                     model.spec = Object.assign({}, model.spec, cmd.form)
+                                    if (cmd.form.level) {
+                                        model.params.homelevel = cmd.form.level
+                                    }
                                     io.storage.set(cmd.name, model)
                                     io.storage.flush(cmd.name)
                                 }

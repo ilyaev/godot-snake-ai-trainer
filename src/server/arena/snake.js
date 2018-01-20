@@ -273,6 +273,7 @@ const arena = (io, socket) => {
 
         updateModel: form => {
             scene.spec = Object.assign({}, scene.spec, form)
+            scene.params.homelevel = form.level || 'empty8x8'
             updateLearningSpec(scene.spec)
             saveModel()
         },

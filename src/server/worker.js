@@ -220,14 +220,22 @@ process.on('message', msg => {
 
 let updateSpec = function(cmd) {
     log('update spec for ' + modelName + ' / ' + JSON.stringify(cmd))
+    console.log('params', snake.scene.params)
     snake.scene.spec = cmd.value
     snake.scene.agent.epsilon = cmd.value.epsilon
     snake.scene.agent.alpha = cmd.value.alpha
     snake.scene.agent.gamma = cmd.value.gamma
     snake.scene.agent.experienceSize = cmd.value.experience_size
     snake.scene.agent.experienceAddEvery = cmd.value.learning_steps_per_iteration
-    //snake.scene.spec.rivals = (Math.floor(cmd.value.size / 7) - 1) * 2
-    //snake.resizeTo(cmd.value.size, cmd.value.size)
+    if (cmd.value.level && cmd.value.level !== snake.scene.params.homelevel) {
+        snake.scene.params.homelevel = cmd.value.level
+        clearImmediate(handler)
+        setTimeout(() => {
+            console.log('-Change Level To: ', snake.scene.params.homelevel)
+            snake.loadLevel(snake.scene.params.homelevel || 'empty8x8')
+            run()
+        }, 100)
+    }
 }
 
 let handshake = function(cmd) {
@@ -276,7 +284,6 @@ let run = function() {
     counter++
     snake.nextStep()
     handler = setImmediate(run)
-    //hadler = setTimeout(run, 500)
 }
 
 let finishLearning = function(cmd) {
