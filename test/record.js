@@ -17,12 +17,12 @@ const runPlayer = () => {
                     console.log('KILL: ' + pid)
                     exec('kill ' + pid)
                 })
-            setTimeout(() => {
-                const cmd = 'python ' + pathToReplay + 'play.py SERVER'
-                console.log('EXEC: ' + cmd, { cwd: pathToReplay })
-                exec(cmd)
-            }, 500)
         }
+        setTimeout(() => {
+            const cmd = 'python ' + pathToReplay + 'play.py SERVER'
+            console.log('EXEC: ' + cmd, { cwd: pathToReplay })
+            exec(cmd)
+        }, 500)
     })
 }
 
@@ -45,9 +45,12 @@ var handler = false
 var counter = 0
 var cmd = {
     spec: {
-        alpha: 0.02,
+        alpha: 0.03,
         epsilon: 0.1,
-        numHiddenUnits: 100,
+        //numHiddenUnits: 100,
+        learningStepsPerIteration: 10,
+        experienceSize: 10000,
+        experienceAddEvery: 2,
         gamma: 0.75,
         rivals: 0,
         size: 7

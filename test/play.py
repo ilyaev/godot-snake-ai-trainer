@@ -5,6 +5,10 @@ dir_path = os.path.dirname(os.path.realpath(__file__)) + '/'
 
 fname = dir_path + 'replay.m8x8'
 
+for x in range(8):
+    for y in range(8):
+        print(x, y)
+
 
 def replay(items):
     params = {}
