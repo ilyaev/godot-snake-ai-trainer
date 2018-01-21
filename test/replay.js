@@ -98,4 +98,15 @@ getCollection().then(collection => {
         })
 })
 
+var events = ['exit', 'SIGINT', 'SIGUSR1']
+
+events.forEach(event => {
+    process.once(event, () => {
+        console.log('cleanup....')
+        const cmd = 'python ' + pathToReplay + '../tools/matrix.py'
+        console.log('EXEC: ' + cmd)
+        exec(cmd)
+    })
+})
+
 run()
