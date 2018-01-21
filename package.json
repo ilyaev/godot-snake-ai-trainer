@@ -16,7 +16,8 @@
         "export": "node ./export.js model",
         "tezt": "node ./test/index.js",
         "logs": "heroku logs -t",
-        "deploy": "git add . && git commit -m 'chore: publish to heroku' && git push"
+        "deploy": "git add . && git commit -m 'chore: publish to heroku' && git push",
+        "replay": "node ./test/record.js"
     },
     "dependencies": {
         "babel-core": "^6.21.0",

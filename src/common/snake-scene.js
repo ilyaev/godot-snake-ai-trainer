@@ -153,6 +153,8 @@ const calculateMaxNumInputs = features => {
     }, 0)
 }
 
+let replay = []
+
 module.exports = {
     instance: (instanceProps = {}) => {
         instanceProps = Object.assign(
@@ -160,6 +162,7 @@ module.exports = {
                 mode: 'server',
                 debug: true,
                 test: false,
+                recording: false,
                 onProgress: false
             },
             instanceProps
@@ -290,13 +293,13 @@ module.exports = {
         }
 
         const restartActor = (reward, reason) => {
-            if (instanceProps.test) {
-                scene.actor.tail.length > 2 &&
-                    console.log('RS:', reward, reason, scene.result.epoch, scene.actor.step, scene.actor.tail.length, scene.agent.epsilon)
-                if (reason.indexOf('cycle') !== -1) {
-                    console.log(reason, ' l: ' + scene.actor.tail.length)
-                }
-            }
+            // if (instanceProps.test) {
+            //     scene.actor.tail.length > 2 &&
+            //         console.log('RS:', reward, reason, scene.result.epoch, scene.actor.step, scene.actor.tail.length, scene.agent.epsilon)
+            //     if (reason.indexOf('cycle') !== -1) {
+            //         console.log(reason, ' l: ' + scene.actor.tail.length)
+            //     }
+            // }
             //console.log(reason, ' l: ' + scene.actor.tail.length)
             const historyRecord = {
                 size: scene.actor.tail.length,
@@ -339,6 +342,12 @@ module.exports = {
             respawnFood(scene.actor, true)
             scene.actor.target = clone(scene.food[0])
             scene.target = clone(scene.food[0])
+            if (instanceProps.onEpoch) {
+                var cb = instanceProps.onEpoch
+                cb(scene.result.epoch, replay)
+            }
+            replay = []
+            replay.push('epoch:' + scene.result.epoch)
         }
 
         const getNextFood = () => {
@@ -510,15 +519,11 @@ module.exports = {
                         break
                     case FEATURE_CLOSEST_FOOD_DICRECTION:
                         if (actor.target) {
-                            // result.push((actor.target.x - actor.x) / scene.maxX)
-                            // result.push((actor.target.y - actor.y) / scene.maxY)
                             result.push(1 - limitDistanceToFood(actor.target.x - actor.x) / 8)
                             result.push(1 - limitDistanceToFood(actor.target.y - actor.y) / 8)
                             result.push(1 - (actor.target.x - actor.x) / scene.maxX)
                             result.push(1 - (actor.target.y - actor.y) / scene.maxY)
                         } else {
-                            // result.push((scene.target.x - actor.x) / scene.maxX)
-                            // result.push((scene.target.y - actor.y) / scene.maxY)
                             result.push(1 - limitDistanceToFood(scene.target.x - actor.x) / 8)
                             result.push(1 - limitDistanceToFood(scene.target.y - actor.y) / 8)
                             result.push(1 - (scene.target.x - actor.x) / scene.maxX)
@@ -716,6 +721,14 @@ module.exports = {
                     return one
                 })
             })
+            addReplay()
+        }
+
+        const addReplay = () => {
+            if (!instanceProps.recording) {
+                return
+            }
+            replay.push(hashField())
         }
 
         const initAgents = (params, spec) => {
@@ -749,6 +762,32 @@ module.exports = {
                 }
             }
             buildWalls()
+        }
+
+        const hashField = () => {
+            var res = ''
+            for (var y = 0; y <= scene.maxY; y++) {
+                for (var x = 0; x <= scene.maxX; x++) {
+                    var c = ''
+
+                    if (isWall(x, y)) {
+                        c = 'w'
+                    }
+
+                    if (isFood(x, y)) {
+                        c = 'F'
+                    }
+
+                    if (x == scene.actor.x && y == scene.actor.y) {
+                        c = '#'
+                    }
+
+                    if (c) {
+                        res += x + '' + y
+                    }
+                }
+            }
+            return res
         }
 
         const printField = () => {
