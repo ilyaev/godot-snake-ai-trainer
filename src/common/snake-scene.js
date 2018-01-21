@@ -344,10 +344,9 @@ module.exports = {
             scene.target = clone(scene.food[0])
             if (instanceProps.onEpoch) {
                 var cb = instanceProps.onEpoch
-                cb(scene.result.epoch, replay)
+                cb(scene.result.epoch, ['epoch:' + scene.result.epoch].concat(replay.slice(1)))
             }
             replay = []
-            replay.push('epoch:' + scene.result.epoch)
         }
 
         const getNextFood = () => {

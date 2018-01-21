@@ -9,6 +9,10 @@ dotenv.load()
 
 var handler = false
 var counter = 0
+var tick = 1000
+var tickInterval = 2
+var glEpoch = 0
+var paused = false
 
 const pathToReplay = process.env.PATH_TO_REPLAY || './'
 
@@ -18,9 +22,11 @@ const getSnake = model => {
         test: true,
         recording: true,
         onEpoch: (epoch, replay) => {
-            if (epoch % 10 === 0) {
-                fs.writeFileSync(pathToReplay + 'replay.m8x8', replay.join('\r\n'))
-            }
+            fs.writeFileSync(pathToReplay + 'replay.m8x8', replay.join('\r\n'))
+            paused = true
+            setTimeout(() => {
+                paused = false
+            }, 1000)
         }
     })
 
@@ -60,7 +66,7 @@ const runPlayer = () => {
 }
 
 var run = function() {
-    if (snake) {
+    if (snake && !paused) {
         counter++
         snake.nextStep()
     }
