@@ -14,7 +14,7 @@ const pathToReplay = process.env.PATH_TO_REPLAY || './'
 
 const getSnake = model => {
     var snake = require('../src/common/snake-scene').instance({
-        mode: 'server',
+        mode: 'client',
         test: true,
         recording: true,
         onEpoch: (epoch, replay) => {
@@ -60,16 +60,17 @@ const runPlayer = () => {
 }
 
 var run = function() {
-    counter++
-    snake.nextStep()
-    run()
+    if (snake) {
+        counter++
+        snake.nextStep()
+    }
+    handler = setImmediate(run)
 }
 
 const runModel = model => {
     console.log('Run Model: ' + model.name)
     snake = getSnake(model)
     runPlayer()
-    run()
 }
 
 getCollection().then(collection => {
@@ -84,6 +85,7 @@ getCollection().then(collection => {
                 }
             })
             collection.db.close()
-            process.exit()
         })
 })
+
+run()
