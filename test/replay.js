@@ -69,8 +69,12 @@ var run = function() {
     if (snake && !paused) {
         counter++
         snake.nextStep()
+        handler = setImmediate(run)
+    } else {
+        setTimeout(() => {
+            handler = setImmediate(run)
+        }, 900)
     }
-    handler = setImmediate(run)
 }
 
 const runModel = model => {
