@@ -13,12 +13,14 @@ var handler = false
 var counter = 0
 var cmd = {
     spec: {
-        alpha: 0.02,
-        epsilon: 0.5,
-        numHiddenUnits: 100,
+        alpha: 0.03,
+        epsilon: 0.33,
+        learningStepsPerIteration: 10,
+        experienceSize: 10000,
         gamma: 0.75,
         rivals: 0,
-        size: 7
+        size: 7,
+        experienceAddEvery: 2
     },
     params: {
         numStates: snake.calculateMaxNumInputs(features),

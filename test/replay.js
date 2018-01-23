@@ -90,7 +90,7 @@ getCollection().then(collection => {
         .then(data => {
             data.map(record => {
                 const model = JSON.parse(record.model)
-                if (model.params.homelevel === 'empty8x8') {
+                if (model.params.homelevel === 'empty8x8' && !snake) {
                     runModel(model)
                 }
             })
@@ -98,7 +98,7 @@ getCollection().then(collection => {
         })
 })
 
-var events = ['exit', 'SIGINT', 'SIGUSR1']
+var events = ['exit', 'SIGINT', 'SIGUSR1', 'SIGQUIT', 'SIGTERM']
 
 events.forEach(event => {
     process.once(event, () => {
@@ -106,6 +106,9 @@ events.forEach(event => {
         const cmd = 'python ' + pathToReplay + '../tools/matrix.py'
         console.log('EXEC: ' + cmd)
         exec(cmd)
+        setTimeout(() => {
+            process.exit()
+        }, 2000)
     })
 })
 
