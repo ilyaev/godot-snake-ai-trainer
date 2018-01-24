@@ -75,14 +75,14 @@ const config = {
         features: [FEATURE_HEAD_COORDINATES, FEATURE_CLOSEST_FOOD_DICRECTION, FEATURE_VISION_CLOSE_RANGE]
     },
     spec: {
-        alpha: 0.03,
+        alpha: 0.015,
         epsilon: 0.33,
-        learningStepsPerIteration: 10,
+        learningStepsPerIteration: 20,
         experienceSize: 10000,
         gamma: 0.75,
         rivals: 0,
         size: 7,
-        experienceAddEvery: 2
+        experienceAddEvery: 1
     },
     actor: {
         x: 3,
@@ -700,7 +700,7 @@ module.exports = {
                                 // teachAgent((maxLen - toFood) / maxLen)
                                 //teachAgent((toFood - 1) / maxLen * -1)
                                 //teachAgent(-0.001)
-                                teachAgent(0.1 / toFood)
+                                teachAgent(-0.01 + 0.01 / toFood)
                             }
                         }
                     }
