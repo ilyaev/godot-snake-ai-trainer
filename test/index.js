@@ -7,7 +7,7 @@ var snake = require('../src/common/snake-scene').instance({
     }
 })
 
-var features = [snake.inputs.FEATURE_CLOSEST_FOOD_DICRECTION, snake.inputs.FEATURE_FULL_MAP_6, snake.inputs.FEATURE_HUNGER]
+var features = [snake.inputs.FEATURE_CLOSEST_FOOD_DICRECTION, snake.inputs.FEATURE_FULL_MAP_6]
 
 var handler = false
 var counter = 0
@@ -38,19 +38,26 @@ var cmd = {
     actor: null
 }
 
-snake.initScene()
+setLevel = level => {
+    cmd.params.homelevel = level
+    cmd.level = level
+}
 
-snake.scene.modelName = 'TEST8x8'
+setLevel('empty8x8')
+
 snake.scene.spec = cmd.spec
-snake.scene.spec.size = 7
 snake.scene.params = cmd.params
+snake.initScene()
+snake.scene.modelName = 'TEST8x8'
+snake.scene.spec.size = 7
 snake.scene.agent.epsilon = cmd.spec.epsilon
 snake.scene.agent.alpha = cmd.spec.alpha
 snake.scene.agent.gamma = cmd.spec.gamma
 snake.scene.maxX = cmd.maxX
 snake.scene.maxY = cmd.maxY
-snake.resizeTo(snake.scene.spec.size, snake.scene.spec.size)
 snake.scene.spec.rivals = 0
+
+snake.resizeTo(snake.scene.spec.size, snake.scene.spec.size)
 snake.loadLevel(cmd.params.homelevel || 'empty8x8')
 
 var run = function() {
@@ -59,7 +66,7 @@ var run = function() {
     handler = setImmediate(run)
     const epoch = snake.scene.result.epoch
     if (epoch % 100 === 0) {
-        snake.scene.agent.epsilon = Math.max(0.01, cmd.spec.epsilon - cmd.spec.epsilon * epoch / 1000)
+        snake.scene.agent.epsilon = Math.max(0.01, cmd.spec.epsilon - cmd.spec.epsilon * epoch / 500)
     }
 }
 

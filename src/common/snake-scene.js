@@ -75,11 +75,11 @@ const config = {
         features: [FEATURE_HEAD_COORDINATES, FEATURE_CLOSEST_FOOD_DICRECTION, FEATURE_VISION_CLOSE_RANGE]
     },
     spec: {
-        alpha: 0.015,
-        epsilon: 0.33,
+        alpha: 0.01,
+        epsilon: 0.3,
         learningStepsPerIteration: 20,
         experienceSize: 10000,
-        gamma: 0.75,
+        gamma: 0.95,
         rivals: 0,
         size: 7,
         experienceAddEvery: 1
@@ -668,7 +668,7 @@ module.exports = {
                     }
                     toRespawn = true
                     if (actor.student) {
-                        teachAgent(1) //1 * Math.round(scene.maxX / 8))
+                        teachAgent(0.5) //1 * Math.round(scene.maxX / 8))
                     }
                 } else if (isWall(actor.x, actor.y)) {
                     if (actor.student) {
@@ -693,14 +693,15 @@ module.exports = {
                                 restartActor(-1, 'cycle: ' + isCycled)
                             } else {
                                 //teachAgent(-0.01)
-                                const toFood = Math.sqrt(
-                                    Math.pow(scene.actor.x - scene.actor.target.x, 2) + Math.pow(scene.actor.y - scene.actor.target.y, 2)
-                                )
+                                // const toFood = Math.sqrt(
+                                //     Math.pow(scene.actor.x - scene.actor.target.x, 2) + Math.pow(scene.actor.y - scene.actor.target.y, 2)
+                                // )
                                 //console.log('tf', maxLen - toFood)
                                 // teachAgent((maxLen - toFood) / maxLen)
                                 //teachAgent((toFood - 1) / maxLen * -1)
                                 //teachAgent(-0.001)
-                                teachAgent(-0.01 + 0.01 / toFood)
+                                //teachAgent(-0.01 + 0.01 / toFood)
+                                teachAgent(0)
                             }
                         }
                     }
