@@ -296,6 +296,7 @@ module.exports = {
                 e: res.epoch,
                 p: period,
                 t: res.maxTail,
+                a: res.sumTail / period,
                 s: res.maxSteps
             })
             scene.result.history[period] = scene.result.history[period].splice(-100)
