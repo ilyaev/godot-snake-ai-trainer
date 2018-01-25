@@ -76,7 +76,7 @@ const config = {
     },
     spec: {
         alpha: 0.01,
-        epsilon: 0.3,
+        epsilon: 0.01,
         learningStepsPerIteration: 20,
         experienceSize: 10000,
         gamma: 0.95,
@@ -154,6 +154,7 @@ const calculateMaxNumInputs = features => {
 }
 
 let replay = []
+let customWalls = {}
 
 module.exports = {
     instance: (instanceProps = {}) => {
@@ -424,6 +425,15 @@ module.exports = {
             }
         }
 
+        const clearCustomWalls = () => (customWalls = {})
+
+        const setWall = (x, y, value) => {
+            if (!customWalls[x]) {
+                customWalls[x] = {}
+            }
+            customWalls[x][y] = value ? true : false
+        }
+
         const isWall = (x, y) => {
             if (typeof walls[x] === 'undefined' || typeof walls[x][y] === 'undefined') {
                 return true
@@ -448,6 +458,9 @@ module.exports = {
                 for (var y = 0; y <= scene.maxY; y++) {
                     walls[x][y] = false
                     foods[x][y] = false
+                    if (customWalls[x] && customWalls[x][y]) {
+                        walls[x][y] = true
+                    }
                 }
             }
             if (scene.level) {
@@ -858,6 +871,8 @@ module.exports = {
             foods,
             initAgents,
             implantBrain,
+            setWall,
+            clearCustomWalls,
             inputs: {
                 FEATURE_HEAD_COORDINATES,
                 FEATURE_CLOSEST_FOOD_DICRECTION,

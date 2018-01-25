@@ -13,11 +13,12 @@ var handler = false
 var counter = 0
 var cmd = {
     spec: {
-        alpha: 0.015,
-        epsilon: 0.33,
+        alpha: 0.01,
+        epsilon: 0.01,
         learningStepsPerIteration: 20,
         experienceSize: 10000,
-        gamma: 0.75,
+        //numHiddenUnits: 40,
+        gamma: 0.95,
         rivals: 0,
         size: 7,
         experienceAddEvery: 1
@@ -65,8 +66,8 @@ var run = function() {
     snake.nextStep()
     handler = setImmediate(run)
     const epoch = snake.scene.result.epoch
-    if (epoch % 100 === 0) {
-        snake.scene.agent.epsilon = Math.max(0.01, cmd.spec.epsilon - cmd.spec.epsilon * epoch / 500)
+    if (epoch % 5 === 0) {
+        snake.scene.agent.epsilon = Math.max(0.01, cmd.spec.epsilon - cmd.spec.epsilon * epoch / 50)
     }
 }
 
