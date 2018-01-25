@@ -16,6 +16,7 @@ const FEATURE_HUNGER = 8
 const FEATURE_FULL_MAP_4 = 9
 const FEATURE_FULL_MAP_6 = 10
 const FEATURE_CLOSEST_FOOD_ANGLE = 11
+const FEATURE_FULL_MAP_12 = 12
 const academy = require('./levels')
 
 const binmap = [1, 2, 4, 8, 16, 32, 64, 128]
@@ -58,6 +59,9 @@ const featureMap = {
     },
     [FEATURE_FULL_MAP_6]: {
         inputs: 36
+    },
+    [FEATURE_FULL_MAP_12]: {
+        inputs: 144
     }
 }
 
@@ -100,6 +104,7 @@ const config = {
     food: [],
     maxFood: 1,
     level: false,
+    pits: [],
     rivals: [],
     target: {
         x: 1,
@@ -174,6 +179,7 @@ module.exports = {
 
         var walls = {}
         var foods = {}
+        var pits = {}
 
         var turns = []
         const maxTurns = 1000
@@ -185,10 +191,12 @@ module.exports = {
         const getNextRivalPlace = () => {
             var cX = 1 + Math.round(Math.random() * (scene.maxX - 1))
             var cY = 1 + Math.round(Math.random() * (scene.maxY - 1))
-            while (Math.abs(cX - scene.actor.x) > 3 && Math.abs(cY - scene.actor.Y) > 3) {
-                cX = 1 + Math.round(Math.random() * (scene.maxX - 1))
-                cY = 1 + Math.round(Math.random() * (scene.maxY - 1))
+            if (scene.pits.length > 0) {
+                var place = scene.pits[Math.floor(Math.random() * scene.pits.length)]
+                cX = place.x
+                cY = place.y
             }
+
             return { cX, cY }
         }
 
@@ -294,14 +302,6 @@ module.exports = {
         }
 
         const restartActor = (reward, reason) => {
-            // if (instanceProps.test) {
-            //     scene.actor.tail.length > 2 &&
-            //         console.log('RS:', reward, reason, scene.result.epoch, scene.actor.step, scene.actor.tail.length, scene.agent.epsilon)
-            //     if (reason.indexOf('cycle') !== -1) {
-            //         console.log(reason, ' l: ' + scene.actor.tail.length)
-            //     }
-            // }
-            //console.log(reason, ' l: ' + scene.actor.tail.length)
             const historyRecord = {
                 size: scene.actor.tail.length,
                 step: scene.actor.step,
@@ -567,6 +567,9 @@ module.exports = {
                         break
                     case FEATURE_FULL_MAP_6:
                         result = result.concat(buildFullMap(actor, 6))
+                        break
+                    case FEATURE_FULL_MAP_12:
+                        result = result.concat(buildFullMap(actor, 12))
                         break
                     case FEATURE_TAIL_SIZE:
                         result.push(actor.tail.length / scene.maxX * (scene.maxY / 3) - 0.5)
@@ -850,6 +853,16 @@ module.exports = {
             respawnFood(scene.actor, true)
             scene.actor.target = clone(scene.food[0])
             scene.target = clone(scene.food[0])
+            scene.pits = level.pits
+            for (var x = 0; x <= scene.maxX; x++) {
+                pits[x] = {}
+                for (var y = 0; y <= scene.maxY; y++) {
+                    pits[x][y] = false
+                }
+            }
+            scene.pits.forEach(pit => {
+                pits[pit.x][pit.y] = true
+            })
         }
 
         return {
@@ -869,6 +882,7 @@ module.exports = {
             loadLevel,
             walls,
             foods,
+            pits,
             initAgents,
             implantBrain,
             setWall,
@@ -884,6 +898,7 @@ module.exports = {
                 FEATURE_HUNGER,
                 FEATURE_FULL_MAP_4,
                 FEATURE_FULL_MAP_6,
+                FEATURE_FULL_MAP_12,
                 FEATURE_CLOSEST_FOOD_ANGLE
             }
         }
