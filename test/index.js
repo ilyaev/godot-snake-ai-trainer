@@ -7,17 +7,24 @@ var snake = require('../src/common/snake-scene').instance({
     }
 })
 
-var features = [snake.inputs.FEATURE_CLOSEST_FOOD_DICRECTION, snake.inputs.FEATURE_FULL_MAP_6]
+var features = [
+    snake.inputs.FEATURE_CLOSEST_FOOD_DICRECTION,
+    snake.inputs.FEATURE_FULL_MAP_6,
+    snake.inputs.FEATURE_BODY_MASS_DIRECTION,
+    snake.inputs.FEATURE_TAIL_DIRECTION,
+    snake.inputs.FEATURE_HUNGER,
+    snake.inputs.FEATURE_TAIL_SIZE
+]
 
 var handler = false
 var counter = 0
 var cmd = {
     spec: {
         alpha: 0.01,
-        epsilon: 0.01,
+        epsilon: 0.0001,
         learningStepsPerIteration: 20,
         experienceSize: 10000,
-        //numHiddenUnits: 40,
+        numHiddenUnits: Math.round(snake.calculateMaxNumInputs(features) * 1.2),
         gamma: 0.95,
         rivals: 0,
         size: 7,
@@ -39,12 +46,16 @@ var cmd = {
     actor: null
 }
 
+cmd.spec.learningStepsPerIteration = Math.floor(20 / (cmd.spec.numHiddenUnits / 50))
+
+console.log('SPEC: ', cmd.spec)
+
 setLevel = level => {
     cmd.params.homelevel = level
     cmd.level = level
 }
 
-setLevel('empty8x8')
+setLevel('empty16x16')
 
 snake.scene.spec = cmd.spec
 snake.scene.params = cmd.params
@@ -66,9 +77,9 @@ var run = function() {
     snake.nextStep()
     handler = setImmediate(run)
     const epoch = snake.scene.result.epoch
-    if (epoch % 5 === 0) {
-        snake.scene.agent.epsilon = Math.max(0.01, cmd.spec.epsilon - cmd.spec.epsilon * epoch / 50)
-    }
+    // if (epoch % 5 === 0) {
+    //     snake.scene.agent.epsilon = Math.max(0.01, cmd.spec.epsilon - cmd.spec.epsilon * epoch / 50)
+    // }
 }
 
 if (cmd.start) {

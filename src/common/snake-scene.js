@@ -17,6 +17,7 @@ const FEATURE_FULL_MAP_4 = 9
 const FEATURE_FULL_MAP_6 = 10
 const FEATURE_CLOSEST_FOOD_ANGLE = 11
 const FEATURE_FULL_MAP_12 = 12
+const FEATURE_BODY_MASS_DIRECTION = 13
 const academy = require('./levels')
 
 const binmap = [1, 2, 4, 8, 16, 32, 64, 128]
@@ -32,6 +33,9 @@ const featureMap = {
     },
     [FEATURE_CLOSEST_FOOD_DICRECTION]: {
         inputs: 4
+    },
+    [FEATURE_BODY_MASS_DIRECTION]: {
+        inputs: 2
     },
     [FEATURE_CLOSEST_FOOD_ANGLE]: {
         inputs: 1
@@ -523,6 +527,18 @@ module.exports = {
 
         const limitDistanceToFood = (dist, limit = 8) => Math.min(limit, Math.max(dist, -1 * limit))
 
+        const bodyMassPos = actor => {
+            const pos = actor.tail.reduce(
+                (result, next) => {
+                    result.x += next.x
+                    result.y += next.y
+                    return result
+                },
+                { x: actor.x, y: actor.y }
+            )
+            return { x: pos.x / actor.tail.length + 1, y: pos.y / actor.tail.length + 1 }
+        }
+
         const buildState = actor => {
             let result = []
             scene.params.features.map(one => parseInt(one)).forEach(feature => {
@@ -530,6 +546,11 @@ module.exports = {
                     case FEATURE_HEAD_COORDINATES:
                         result.push(actor.x / scene.maxX)
                         result.push(actor.y / scene.maxY)
+                        break
+                    case FEATURE_BODY_MASS_DIRECTION:
+                        const bmPos = bodyMassPos(actor)
+                        result.push(1 - (bmPos.x - actor.x) / scene.maxX)
+                        result.push(1 - (bmPos.y - actor.y) / scene.maxY)
                         break
                     case FEATURE_CLOSEST_FOOD_DICRECTION:
                         if (actor.target) {
@@ -901,7 +922,8 @@ module.exports = {
                 FEATURE_FULL_MAP_4,
                 FEATURE_FULL_MAP_6,
                 FEATURE_FULL_MAP_12,
-                FEATURE_CLOSEST_FOOD_ANGLE
+                FEATURE_CLOSEST_FOOD_ANGLE,
+                FEATURE_BODY_MASS_DIRECTION
             }
         }
     }
