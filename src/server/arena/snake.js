@@ -47,8 +47,8 @@ const createGame = (scene, name, state, params) => {
         console.log('--features: ', params.features)
         scene.params.features = params.features
         scene.params.numStates = state.calculateMaxNumInputs(scene.params.features)
-        scene.spec.numHiddenUnits = Math.max(100, scene.params.numStates)
-        scene.spec.learningStepsPerIteration = Math.floor(20 / (scene.spec.numHiddenUnits / 100))
+        scene.spec.numHiddenUnits = Math.round(scene.params.numStates * 1.2) //Math.max(100, scene.params.numStates)
+        scene.spec.learningStepsPerIteration = Math.floor(20 / (scene.spec.numHiddenUnits / 50))
         console.log('---spec', scene.spec)
     }
     if (params.level) {

@@ -200,7 +200,8 @@ module.exports = {
             return { cX, cY }
         }
 
-        const initRivals = () => {
+        const initRivals = maxRivals => {
+            scene.spec.rivals = maxRivals
             scene.actor.student = true
             scene.actor.active = true
             var shift = 0
@@ -209,7 +210,7 @@ module.exports = {
                 var place = getNextRivalPlace()
                 const x = place.cX
                 const y = place.cY
-                scene.rivals.push({
+                const rival = {
                     x,
                     y,
                     active: true,
@@ -225,7 +226,9 @@ module.exports = {
                             y: y
                         }
                     ]
-                })
+                }
+                respawnFood(rival)
+                scene.rivals.push(rival)
             }
         }
 
@@ -264,7 +267,6 @@ module.exports = {
             scene.result.step = 0
             scene.result.epoch = 0
             restartActor(-1, 'init')
-            initRivals()
         }
 
         const calculateAverage = period => {
@@ -333,7 +335,6 @@ module.exports = {
             scene.actor.y = y
             scene.actor.tail[0].x = x - 1
             scene.actor.tail[0].y = y - 1
-            initRivals()
             if (!scene.result.epoch) {
                 scene.result.epoch = 0
             }
@@ -376,7 +377,7 @@ module.exports = {
 
         const removeFood = food => {
             scene.food = scene.food.filter(one => one.x !== food.x || one.y !== food.y)
-            while (scene.food.length < scene.maxFood) {
+            while (scene.food.length < scene.maxFood + scene.spec.rivals) {
                 respawnFood(false)
             }
         }
