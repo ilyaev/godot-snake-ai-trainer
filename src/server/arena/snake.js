@@ -1,5 +1,4 @@
 var fs = require('fs')
-//const DQNAgent = require('reinforcenode').DQNAgent
 const colorText = require('../debug').colorText
 
 const initGameFromModel = (scene, model, state) => {
@@ -13,15 +12,7 @@ const initGameFromModel = (scene, model, state) => {
         },
         model.spec
     )
-    // scene.agent = new DQNAgent(
-    //     {
-    //         getNumStates: () => (model.params.features ? state.calculateMaxNumInputs(model.params.features) : model.params.numStates),
-    //         getMaxNumActions: () => model.params.numActions
-    //     },
-    //     model.spec
-    // )
     scene.params = model.params
-    //scene.agent.fromJSON(model.brain)
     state.implantBrain(model.brain)
     scene.result = model.result
     scene.reward = 0
@@ -46,8 +37,9 @@ const createGame = (scene, name, state, params) => {
     if (params.features) {
         console.log('--features: ', params.features)
         scene.params.features = params.features
+        scene.spec.rotation = params.rotation || 0
         scene.params.numStates = state.calculateMaxNumInputs(scene.params.features)
-        scene.spec.numHiddenUnits = Math.round(scene.params.numStates * 2) //Math.max(100, scene.params.numStates)
+        scene.spec.numHiddenUnits = Math.round(scene.params.numStates * 1.2)
         scene.spec.learningStepsPerIteration = Math.floor(20 / (scene.spec.numHiddenUnits / 50))
         console.log('---spec', scene.spec)
     }
@@ -62,13 +54,6 @@ const createGame = (scene, name, state, params) => {
         },
         scene.spec
     )
-    // scene.agent = new DQNAgent(
-    //     {
-    //         getNumStates: () => scene.params.numStates,
-    //         getMaxNumActions: () => scene.params.numActions
-    //     },
-    //     scene.spec
-    // )
     scene.result = {
         step: 0,
         wins: 0,
@@ -101,13 +86,6 @@ const initGame = (scene, cmd, ai, state) => {
         },
         cmd.spec
     )
-    // scene.agent = new DQNAgent(
-    //     {
-    //         getNumStates: () => scene.params.numStates,
-    //         getMaxNumActions: () => scene.params.numActions
-    //     },
-    //     cmd.spec
-    // )
     scene.result = {
         step: 0,
         wins: 0
@@ -227,6 +205,9 @@ const arena = (io, socket) => {
                     } else {
                         //scene.agent.fromJSON(cmd.brain)
                         state.implantBrain(cmd.brain)
+                        if (cmd.level) {
+                            scene.params.homelevel = cmd.level
+                        }
                         saveModel()
                         if (cmd.save) {
                             io.storage.flush(cmd.name)
@@ -247,7 +228,6 @@ const arena = (io, socket) => {
                     } else {
                         if (cmd.brain) {
                             state.implantBrain(cmd.brain)
-                            //scene.agent.fromJSON(cmd.brain)
                             saveModel()
                         }
                     }

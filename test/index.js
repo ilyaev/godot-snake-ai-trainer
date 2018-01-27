@@ -24,7 +24,7 @@ var cmd = {
         epsilon: 0.0001,
         learningStepsPerIteration: 20,
         experienceSize: 10000,
-        numHiddenUnits: Math.round(snake.calculateMaxNumInputs(features) * 2),
+        numHiddenUnits: Math.round(snake.calculateMaxNumInputs(features) * 1.2),
         gamma: 0.95,
         rivals: 0,
         size: 7,

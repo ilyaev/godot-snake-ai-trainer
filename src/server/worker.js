@@ -13,166 +13,11 @@ let log = txt => {
     console.log('WORKER ' + id + ': ' + txt)
 }
 
-let curRule = {
-    id: 0
-}
-
 let lastEpoch = 0
 
-const hometrain = [
-    {
-        epoch: 5000,
-        id: 1,
-        epsilon: 0.5
-    },
-    {
-        epoch: 10000,
-        id: 2,
-        epsilon: 0.4
-    },
-    {
-        epoch: 15000,
-        id: 3,
-        epsilon: 0.3
-    },
-    {
-        epoch: 20000,
-        id: 4,
-        epsilon: 0.2
-    },
-    {
-        epoch: 30000,
-        id: 5,
-        epsilon: 0.1
-    },
-    {
-        epoch: 40000,
-        id: 6,
-        epsilon: 0.05
-    },
-    {
-        epoch: 50000,
-        id: 7,
-        epsilon: 0.02
-    },
-    {
-        epoch: 60000,
-        id: 8,
-        epsilon: 0.01
-    }
-]
-
-const curriculum = [
-    {
-        level: 'empty8x8',
-        epoch: 5000,
-        id: 1,
-        epsilon: 0.3
-    },
-    {
-        level: 'empty8x8',
-        epoch: 10000,
-        id: 2,
-        epsilon: 0.1
-    },
-    {
-        level: 'empty8x8',
-        epoch: 20000,
-        id: 3,
-        epsilon: 0.01
-    },
-    {
-        epoch: 30000,
-        id: 4,
-        level: 'empty16x16',
-        epsilon: 0.1
-    },
-    {
-        epoch: 40000,
-        id: 5,
-        level: 'empty16x16',
-        epsilon: 0.01
-    },
-    {
-        epoch: 50000,
-        id: 6,
-        level: 'empty32x32',
-        epsilon: 0.1
-    },
-    {
-        epoch: 60000,
-        id: 7,
-        level: 'empty32x32',
-        epsilon: 0.01
-    },
-    {
-        id: 8,
-        level: 'one',
-        epoch: 70000,
-        epsilon: 0.1
-    },
-    {
-        id: 9,
-        level: 'one',
-        epoch: 80000,
-        epsilon: 0.01
-    },
-    {
-        id: 10,
-        level: 'two',
-        epoch: 90000,
-        epsilon: 0.1
-    },
-    {
-        id: 11,
-        level: 'two',
-        epoch: 100000,
-        epsilon: 0.01
-    },
-    {
-        id: 12,
-        level: 'three',
-        epoch: 110000,
-        epsilon: 0.1
-    },
-    {
-        id: 13,
-        level: 'three',
-        epoch: 120000,
-        epsilon: 0.01
-    },
-    {
-        id: 14,
-        level: 'four',
-        epoch: 130000,
-        epsilon: 0.1
-    },
-    {
-        id: 15,
-        level: 'four',
-        epoch: 140000,
-        epsilon: 0.01
-    },
-    {
-        id: 16,
-        level: 'five',
-        epoch: 150000,
-        epsilon: 0.1
-    },
-    {
-        id: 17,
-        level: 'five',
-        epoch: 160000,
-        epsilon: 0.01
-    },
-    {
-        id: 18,
-        epoch: 170000,
-        epsilon: 0.001
-    }
-]
-
-const levels = curriculum.filter(one => one.level).map(one => one.level)
+const levels = require('../common/levels')
+    .levels.map(one => one.name)
+    .filter(one => one !== 'empty8x8' && one !== 'empty16x16')
 console.log('ALL LEVELS - ', levels)
 
 process.on('message', msg => {
@@ -307,6 +152,12 @@ let finishLearning = function(cmd) {
     setTimeout(() => process.exit(42), 1000)
 }
 
+const processRotation = () => {
+    console.log('ROTATION - ', snake.scene.spec)
+    console.log('levels ', levels)
+    //snake.loadLevel(nextRule.level)
+}
+
 ticker = setInterval(() => {
     send({
         cmd: 'status',
@@ -321,36 +172,16 @@ ticker = setInterval(() => {
         brain: snake.scene.agent.toJSON()
     })
     if (handler) {
-        if (snake.scene.params.homelevel) {
-            // const nextRule = hometrain.filter(one => one.epoch > snake.scene.result.epoch)[0]
-            // if (nextRule && nextRule.id !== curRule.id) {
-            //     console.log(snake.scene.modelName + ': Apply rule: ', nextRule)
-            //     curRule = nextRule
-            //     if (nextRule.epsilon) {
-            //         snake.scene.spec.epsilon = nextRule.epsilon
-            //         snake.scene.agent.epsilon = nextRule.epsilon
-            //     }
-            // }
-        } else {
-            const nextRule = curriculum.filter(one => one.epoch > snake.scene.result.epoch)[0]
-            if (nextRule && nextRule.id !== curRule.id) {
-                console.log(snake.scene.modelName + ': Apply rule: ', nextRule)
-                curRule = nextRule
-                if (nextRule.epsilon) {
-                    snake.scene.spec.epsilon = nextRule.epsilon
-                    snake.scene.agent.epsilon = nextRule.epsilon
-                }
-                if (nextRule.level) {
-                    snake.loadLevel(nextRule.level)
-                }
-            }
-            if (snake.scene.result.epoch > 170000 && snake.scene.result.epoch - lastEpoch > 1000) {
-                snake.loadLevel(levels[Math.floor(Math.random() * levels.length)])
-                lastEpoch = snake.scene.result.epoch
-                const newE = Math.random() > 0.8 ? 0.001 : 0.01 + Math.random() * 0.1
-                snake.scene.spec.epsilon = newE
-                console.log('Switch to level: ' + snake.scene.level.name + ' / e: ' + newE)
-            }
+        if (snake.scene.spec.rotation > 0 && snake.scene.result.epoch - lastEpoch > 5) {
+            snake.loadLevel(levels[Math.floor(Math.random() * levels.length)])
+            lastEpoch = snake.scene.result.epoch
+            send({
+                cmd: 'sync',
+                save: true,
+                brain: snake.scene.agent.toJSON(),
+                name: snake.scene.modelName,
+                level: snake.scene.level.name
+            })
         }
     }
 }, 1000)
