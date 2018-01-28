@@ -133,7 +133,6 @@ let run = function() {
     counter++
     snake.nextStep()
     processRotation()
-    snake.restartActor(-1, 'restart')
     handler = setImmediate(run)
 }
 
@@ -157,6 +156,7 @@ let finishLearning = function(cmd) {
 const processRotation = () => {
     if (snake.scene.spec.rotation && snake.scene.spec.rotation > 0 && snake.scene.result.epoch - lastEpoch > snake.scene.spec.rotation) {
         snake.loadLevel(levels[Math.floor(Math.random() * levels.length)])
+        snake.restartActor(-1, 'restart')
         lastEpoch = snake.scene.result.epoch
         send({
             cmd: 'sync',

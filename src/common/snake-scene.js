@@ -328,9 +328,10 @@ module.exports = {
                     cb(Object.assign({}, historyRecord, { e: scene.agent.epsilon }))
                 }
             }
-
-            scene.history.push(historyRecord)
-            scene.history = scene.history.splice(-1000)
+            if (reason !== 'restart') {
+                scene.history.push(historyRecord)
+                scene.history = scene.history.splice(-1000)
+            }
             scene.actor = clone(scene.defaultActor)
             var place = getNextRivalPlace()
             const x = place.cX
