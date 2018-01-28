@@ -133,6 +133,7 @@ let run = function() {
     counter++
     snake.nextStep()
     processRotation()
+    snake.restartActor(-1, 'restart')
     handler = setImmediate(run)
 }
 
