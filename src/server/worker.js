@@ -132,6 +132,7 @@ let startLearning = function(cmd) {
 let run = function() {
     counter++
     snake.nextStep()
+    processRotation()
     handler = setImmediate(run)
 }
 
@@ -153,9 +154,19 @@ let finishLearning = function(cmd) {
 }
 
 const processRotation = () => {
-    console.log('ROTATION - ', snake.scene.spec)
-    console.log('levels ', levels)
-    //snake.loadLevel(nextRule.level)
+    if (snake.scene.spec.rotation && snake.scene.spec.rotation > 0 && snake.scene.result.epoch - lastEpoch > snake.scene.spec.rotation) {
+        snake.loadLevel(levels[Math.floor(Math.random() * levels.length)])
+        lastEpoch = snake.scene.result.epoch
+        send({
+            cmd: 'sync',
+            save: true,
+            brain: snake.scene.agent.toJSON(),
+            name: snake.scene.modelName,
+            level: snake.scene.level.name
+        })
+        return true
+    }
+    return false
 }
 
 ticker = setInterval(() => {
@@ -172,20 +183,5 @@ ticker = setInterval(() => {
         brain: snake.scene.agent.toJSON()
     })
     if (handler) {
-        if (
-            snake.scene.spec.rotation &&
-            snake.scene.spec.rotation > 0 &&
-            snake.scene.result.epoch - lastEpoch > snake.scene.spec.rotation
-        ) {
-            snake.loadLevel(levels[Math.floor(Math.random() * levels.length)])
-            lastEpoch = snake.scene.result.epoch
-            send({
-                cmd: 'sync',
-                save: true,
-                brain: snake.scene.agent.toJSON(),
-                name: snake.scene.modelName,
-                level: snake.scene.level.name
-            })
-        }
     }
 }, 1000)
