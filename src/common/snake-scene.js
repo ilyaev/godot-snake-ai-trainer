@@ -792,6 +792,8 @@ module.exports = {
             }
             scene.params.maxX = maxX
             scene.params.maxY = maxY
+            walls = {}
+            foods = {}
             for (var x = 0; x <= scene.maxX; x++) {
                 if (!walls[x]) {
                     walls[x] = {}
@@ -878,6 +880,7 @@ module.exports = {
             scene.actor.target = clone(scene.food[0])
             scene.target = clone(scene.food[0])
             scene.pits = level.pits
+            pits = {}
             for (var x = 0; x <= scene.maxX; x++) {
                 pits[x] = {}
                 for (var y = 0; y <= scene.maxY; y++) {

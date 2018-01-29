@@ -159,7 +159,7 @@ const processRotation = () => {
     if (snake.scene.spec.rotation && snake.scene.spec.rotation > 0 && snake.scene.result.epoch - lastEpoch > snake.scene.spec.rotation) {
         lastEpoch = snake.scene.result.epoch
         snake.loadLevel(levels[Math.floor(Math.random() * levels.length)])
-        snake.restartActor(-1, 'restart')
+        // snake.restartActor(-1, 'restart')
         send({
             cmd: 'sync',
             save: true,
