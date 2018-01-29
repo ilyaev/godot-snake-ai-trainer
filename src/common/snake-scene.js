@@ -473,8 +473,16 @@ module.exports = {
             if (scene.level) {
                 scene.level.walls.forEach(wall => (walls[wall.x][wall.y] = true))
             }
-            scene.food.forEach(food => (foods[food.x][food.y] = true))
+            scene.food.forEach(food => {
+                if (!foods[food.x]) {
+                    foods[food.x] = {}
+                }
+                foods[food.x][food.y] = true
+            })
             getActiveActors().forEach(actor => {
+                if (!walls[actor.x]) {
+                    walls[actor.x] = {}
+                }
                 walls[actor.x][actor.y] = true
                 actor.tail.forEach(one => (walls[one.x][one.y] = true))
             })
