@@ -484,7 +484,12 @@ module.exports = {
                     walls[actor.x] = {}
                 }
                 walls[actor.x][actor.y] = true
-                actor.tail.forEach(one => (walls[one.x][one.y] = true))
+                actor.tail.forEach(one => {
+                    if (!walls[one.x]) {
+                        walls[one.x] = {}
+                    }
+                    walls[one.x][one.y] = true
+                })
             })
         }
 
