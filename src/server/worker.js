@@ -102,7 +102,10 @@ let startLearning = function(cmd) {
         clearImmediate(handler)
     }
     snake = require('../common/snake-scene').instance({
-        mode: 'server'
+        mode: 'server',
+        onEpoch: () => {
+            processRotation()
+        }
     })
     snake.initScene()
     snake.scene.modelName = modelName
@@ -132,7 +135,6 @@ let startLearning = function(cmd) {
 let run = function() {
     counter++
     snake.nextStep()
-    processRotation()
     handler = setImmediate(run)
 }
 
@@ -155,9 +157,9 @@ let finishLearning = function(cmd) {
 
 const processRotation = () => {
     if (snake.scene.spec.rotation && snake.scene.spec.rotation > 0 && snake.scene.result.epoch - lastEpoch > snake.scene.spec.rotation) {
+        lastEpoch = snake.scene.result.epoch
         snake.loadLevel(levels[Math.floor(Math.random() * levels.length)])
         snake.restartActor(-1, 'restart')
-        lastEpoch = snake.scene.result.epoch
         send({
             cmd: 'sync',
             save: true,

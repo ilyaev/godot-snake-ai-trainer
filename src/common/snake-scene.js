@@ -84,7 +84,7 @@ const config = {
     },
     spec: {
         alpha: 0.01,
-        epsilon: 0.01,
+        epsilon: 0.001,
         learningStepsPerIteration: 20,
         experienceSize: 10000,
         gamma: 0.95,
@@ -350,11 +350,11 @@ module.exports = {
             respawnFood(scene.actor, true)
             scene.actor.target = clone(scene.food[0])
             scene.target = clone(scene.food[0])
+            replay = []
             if (instanceProps.onEpoch) {
                 var cb = instanceProps.onEpoch
                 cb(scene.result.epoch, ['epoch:' + scene.result.epoch].concat(replay.slice(1)))
             }
-            replay = []
         }
 
         const getNextFood = () => {
