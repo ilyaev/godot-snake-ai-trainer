@@ -9,11 +9,11 @@ var snake = require('../src/common/snake-scene').instance({
 
 var features = [
     snake.inputs.FEATURE_CLOSEST_FOOD_DICRECTION,
-    snake.inputs.FEATURE_FULL_MAP_6,
-    snake.inputs.FEATURE_BODY_MASS_DIRECTION,
-    snake.inputs.FEATURE_TAIL_DIRECTION,
-    snake.inputs.FEATURE_HUNGER,
-    snake.inputs.FEATURE_TAIL_SIZE
+    snake.inputs.FEATURE_FULL_MAP_6
+    // snake.inputs.FEATURE_BODY_MASS_DIRECTION,
+    // snake.inputs.FEATURE_TAIL_DIRECTION,
+    // snake.inputs.FEATURE_HUNGER,
+    // snake.inputs.FEATURE_TAIL_SIZE
 ]
 
 var handler = false
@@ -85,4 +85,8 @@ var run = function() {
 if (cmd.start) {
     console.log('Learning Started - ' + snake.scene.agent.epsilon)
     run()
+}
+
+module.exports = {
+    cmd
 }

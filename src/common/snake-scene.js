@@ -353,7 +353,7 @@ module.exports = {
             replay = []
             if (instanceProps.onEpoch) {
                 var cb = instanceProps.onEpoch
-                cb(scene.result.epoch, ['epoch:' + scene.result.epoch].concat(replay.slice(1)))
+                cb(scene.result.epoch, ['epoch:' + scene.result.epoch].concat(replay.slice(1)), historyRecord)
             }
         }
 
@@ -847,9 +847,6 @@ module.exports = {
         }
 
         const printField = () => {
-            if (instanceProps.mode === 'client') {
-                return
-            }
             console.log('F: ' + scene.food.length + ', H: ', scene.actor.x, ',', scene.actor.y, ' T: ', scene.actor.tail.length) //, scene.actor, scene.actor.tail)
             var row = ''
             console.log('-------- ' + scene.maxX + 'x' + scene.maxY + ' -------')
