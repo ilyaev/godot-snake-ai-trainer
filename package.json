@@ -18,7 +18,8 @@
         "logs": "heroku logs -t",
         "deploy": "git add . && git commit -m 'chore: publish to heroku' && git push",
         "replay": "node ./test/replay.js",
-        "eval": "node ./test/eval.js"
+        "eval": "node ./test/eval.js",
+        "hereval": "heroku run npm run eval"
     },
     "dependencies": {
         "babel-core": "^6.21.0",

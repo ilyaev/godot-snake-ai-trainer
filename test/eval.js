@@ -9,9 +9,6 @@ var curLevel = ''
 var curHistory = []
 var history = []
 
-console.log('Evaluate model: ' + colorText('navy', modelName) + ' ; batch size: ' + colorText('navy', eSize))
-console.log('-------------')
-
 const levels = require('../src/common/levels')
     .levels.reverse()
     .map(one => one.name)
@@ -42,6 +39,13 @@ getCollection().then(collection => {
 })
 
 const runModel = model => {
+    console.log(
+        'Evaluate model: ' +
+            colorText('navy', model.name + ' v' + model.version + ' age: ' + model.result.epoch) +
+            ' ; batch size: ' +
+            colorText('navy', eSize)
+    )
+    console.log('-------------')
     brain = model.brain
     nextLevel(levels.pop())
 }
