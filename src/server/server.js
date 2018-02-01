@@ -31,7 +31,7 @@ server.listen(PORT, function(error) {
     if (error) {
         console.error(error)
     } else {
-        console.info('==> \t Listening on port %s. Visit http://[SERVER_NAME]:%s in your browser', PORT, PORT)
+        console.info('==> \t Listening on port %s. Visit http://[SERVER_NAME_VAR]:%s in your browser', PORT, PORT)
     }
 })
 
