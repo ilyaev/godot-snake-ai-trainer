@@ -51,6 +51,8 @@ process.on('message', msg => {
                 send({
                     cmd: 'sync',
                     save: false,
+                    stable: snake.scene.stable,
+                    maxAvg: snake.scene.maxAvg,
                     brain: snake.scene.agent.toJSON(),
                     name: snake.scene.modelName
                 })
@@ -122,6 +124,7 @@ let startLearning = function(cmd) {
     snake.scene.agent.gamma = cmd.spec.gamma
     snake.scene.maxX = cmd.maxX
     snake.scene.maxY = cmd.maxY
+    snake.scene.maxAvg = cmd.maxAvg || 0
     snake.resizeTo(snake.scene.spec.size, snake.scene.spec.size)
     snake.scene.spec.rivals = (Math.floor(snake.scene.spec.size / 7) - 1) * 2
     snake.loadLevel(snake.scene.params.homelevel || 'empty8x8')
@@ -150,6 +153,8 @@ let finishLearning = function(cmd) {
         cmd: 'sync',
         save: true,
         brain: snake.scene.agent.toJSON(),
+        stable: snake.scene.stable,
+        maxAvg: snake.scene.maxAvg,
         name: snake.scene.modelName
     })
     setTimeout(() => process.exit(42), 1000)
@@ -163,6 +168,8 @@ const processRotation = () => {
         send({
             cmd: 'sync',
             save: true,
+            stable: snake.scene.stable,
+            maxAvg: snake.scene.maxAvg,
             brain: snake.scene.agent.toJSON(),
             name: snake.scene.modelName,
             level: snake.scene.level.name

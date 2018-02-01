@@ -19,6 +19,8 @@ const initGameFromModel = (scene, model, state) => {
     scene.maxX = model.params.maxX
     scene.maxY = model.params.maxY
     scene.spec = model.spec
+    scene.stable = model.stable || {}
+    scene.maxAvg = model.maxAvg || 0
     if (!scene.spec.size) {
         scene.spec.size = 7
     }
@@ -131,6 +133,7 @@ const arena = (io, socket) => {
             maxX: scene.maxX,
             maxY: scene.maxY,
             brain: scene.agent.toJSON(),
+            maxAvg: scene.maxAvg || 0,
             params: scene.params,
             spec: scene.spec,
             actor: scene.actor,
@@ -167,7 +170,9 @@ const arena = (io, socket) => {
                     maxX: scene.maxX,
                     maxY: scene.maxY
                 }),
-                brain: scene.agent.toJSON()
+                brain: scene.agent.toJSON(),
+                stable: scene.stable || {},
+                maxAvg: scene.maxAvg || 0
             }
         )
         scene.params = model.params
@@ -203,8 +208,11 @@ const arena = (io, socket) => {
                     if (cmd.name !== scene.modelName) {
                         console.log(colorText('red', 'Alert: Concurrent model save'))
                     } else {
-                        //scene.agent.fromJSON(cmd.brain)
                         state.implantBrain(cmd.brain)
+                        if (cmd.stable) {
+                            scene.stable = cmd.stable
+                            scene.maxAvg = cmd.maxAvg
+                        }
                         if (cmd.level) {
                             scene.params.homelevel = cmd.level
                         }

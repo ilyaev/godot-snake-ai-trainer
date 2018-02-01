@@ -15,7 +15,7 @@ const getCollection = () => {
         MongoClient.connect(mUrl)
             .then(mgdb => {
                 db = mgdb
-                collection = db.collection('model')
+                collection = db.collection(process.env.MGDB_COLLECTION)
                 collection.db = db
                 process.on('SIGTERM', () => {
                     console.log('Disconnect from mongoDB')

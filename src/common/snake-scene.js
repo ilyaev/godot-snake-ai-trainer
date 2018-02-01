@@ -134,6 +134,8 @@ const config = {
     qvalues: {},
     history: [],
     agent: null,
+    stable: null,
+    maxAvg: 0,
     rivalAgent: null
 }
 
@@ -298,14 +300,23 @@ module.exports = {
             if (!scene.result.history[period]) {
                 scene.result.history[period] = []
             }
+
+            const avgScore = res.sumTail / period
+
             scene.result.history[period].push({
                 e: res.epoch,
                 p: period,
                 t: res.maxTail,
-                a: res.sumTail / period,
+                a: avgScore,
                 s: res.maxSteps
             })
+
             scene.result.history[period] = scene.result.history[period].splice(-100)
+
+            if (period === 100 && avgScore > scene.maxAvg) {
+                scene.stable = scene.agent.toJSON()
+                scene.maxAvg = avgScore
+            }
         }
 
         const restartActor = (reward, reason) => {

@@ -11,7 +11,7 @@ var buildSnake = (level, brain = false, cb = () => {}) => {
     var cmd = {
         spec: {
             alpha: 0.01,
-            epsilon: 0.0001,
+            epsilon: 0.000000001,
             learningStepsPerIteration: 20,
             experienceSize: 10000,
             numHiddenUnits: Math.round(snake.calculateMaxNumInputs(features) * 1.2),

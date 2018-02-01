@@ -41,12 +41,12 @@ getCollection().then(collection => {
 const runModel = model => {
     console.log(
         'Evaluate model: ' +
-            colorText('navy', model.name + ' v' + model.version + ' age: ' + model.result.epoch) +
+            colorText('navy', model.name + ' v' + model.version + ' age: ' + model.result.epoch + ' maxAvg: ' + model.maxAvg || 0) +
             ' ; batch size: ' +
             colorText('navy', eSize)
     )
-    console.log('-------------')
-    brain = model.brain
+    console.log('------------- ' + (model.stable ? '(stable)' : ''))
+    brain = model.stable || model.brain
     nextLevel(levels.pop())
 }
 
