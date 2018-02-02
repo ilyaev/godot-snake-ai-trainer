@@ -27,10 +27,6 @@ var storageCreator = (params = {}) => {
                 if (params.onConnected) {
                     params.onConnected()
                 }
-                process.on('SIGTERM', () => {
-                    console.log('Disconnect from mongoDB')
-                    db.close()
-                })
             })
             .catch(e => {
                 console.log('DB ERROR: ', e)
@@ -111,6 +107,9 @@ var storageCreator = (params = {}) => {
                 console.log('MONGODB: Delete Model - ', key)
                 collection.deleteMany({ name: key })
             }
+        },
+        disconnect: () => {
+            db.close()
         }
     }
 }

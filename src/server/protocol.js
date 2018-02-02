@@ -53,6 +53,14 @@ const capWorkers = io => name => {
 }
 
 const protocol = io => {
+    const flushActive = () => {
+        console.log('---AutoFlush All Active Models----')
+        io.storage
+            .list()
+            .filter(name => io.workers.get(name) && io.workers.get(name).isActive())
+            .forEach(io.storage.flush)
+    }
+
     return {
         initialize: () => {
             io.instanceId = Math.round(Math.random() * 1000000)
@@ -68,18 +76,10 @@ const protocol = io => {
 
             io.workers = storageCreator()
 
-            //restoreStorage(io)
-
             io.stopWorker = stopWorker(io)
             io.capWorkers = capWorkers(io)
 
-            setInterval(() => {
-                console.log('---AutoFlush All Active Models----')
-                io.storage
-                    .list()
-                    .filter(name => io.workers.get(name) && io.workers.get(name).isActive())
-                    .forEach(io.storage.flush)
-            }, autoFlushMins * 1000 * 60)
+            setInterval(flushActive, autoFlushMins * 1000 * 60)
 
             io.sockets.on('connection', function(socket) {
                 var connection = setupConnection(io, socket)
@@ -89,6 +89,17 @@ const protocol = io => {
                 })
                 socket.on('disconnect', function(data) {
                     connection.disconnect()
+                })
+            })
+
+            const signals = ['SIGINT', 'SIGTERM']
+
+            signals.forEach(pevent => {
+                process.on(pevent, () => {
+                    //flushActive()
+                    console.log('Disconnect from mongoDB')
+                    io.storage.disconnect()
+                    process.exit()
                 })
             })
         }
