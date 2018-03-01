@@ -41,7 +41,7 @@ const createGame = (scene, name, state, params) => {
         scene.params.features = params.features
         scene.spec.rotation = params.rotation || 0
         scene.params.numStates = state.calculateMaxNumInputs(scene.params.features)
-        scene.spec.numHiddenUnits = Math.round(scene.params.numStates * 1.2)
+        scene.spec.numHiddenUnits = Math.max(50, Math.round(scene.params.numStates * 1.2))
         scene.spec.learningStepsPerIteration = Math.floor(20 / (scene.spec.numHiddenUnits / 50))
         console.log('---spec', scene.spec)
     }
