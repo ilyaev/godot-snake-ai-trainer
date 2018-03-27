@@ -100,7 +100,7 @@ program
                         data.forEach(record => {
                             const model = JSON.parse(record.model)
                             delete model.result.history
-                            jsonfile.writeFileSync(pathToModels + model.name, model, { spaces: 1 })
+                            jsonfile.writeFileSync(pathToModels + model.name + '.json', model, { spaces: 1 })
                             console.log('Model - ' + model.name + ': done')
                             index.set(model.name, {
                                 features: model.params.features,
