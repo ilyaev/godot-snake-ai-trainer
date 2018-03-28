@@ -50,7 +50,7 @@ const getIndex = () => {
                     Object.assign(
                         {},
                         {
-                            file: name
+                            file: name + '.json'
                         },
                         params
                     )

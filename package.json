@@ -16,6 +16,7 @@
         "test": "node ./test/index.js",
         "logs": "heroku logs -t",
         "deploy": "git add . && git commit -m 'chore: publish to heroku' && git push",
+        "build-and-deploy": "cd ../godot-snake-ai-dashboard && yarn build && cd ../godot-snake-ai-trainer && yarn run deploy",
         "replay": "node ./test/replay.js",
         "eval": "node ./test/eval.js",
         "hereval": "heroku run npm run eval"
