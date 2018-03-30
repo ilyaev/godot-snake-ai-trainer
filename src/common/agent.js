@@ -1,11 +1,11 @@
 const DQNAgent = require('reinforcenode').DQNAgent
 const UTILS = require('reinforcenode').UTILS
 
-DQNAgent.prototype.act = function(slist, valid = []) {
+DQNAgent.prototype.act = function(slist, valid = [], forceRandom = 0) {
     let s = new UTILS.Mat(this.ns, 1)
     s.setFrom(slist)
     let a
-    if (Math.random() < this.epsilon) {
+    if (Math.random() < this.epsilon || forceRandom > 0) {
         if (valid.length > 0) {
             a = valid[UTILS.randi(0, valid.length)]
         } else {

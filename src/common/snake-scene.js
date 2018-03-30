@@ -677,6 +677,10 @@ module.exports = {
             scene.result.step++
             scene.actor.step += 1
 
+            if (typeof scene.forcedEpsilon === 'undefined') {
+                scene.forcedEpsilon = 0
+            }
+
             var footer = ''
 
             getActiveActors().forEach(actor => {
@@ -692,7 +696,12 @@ module.exports = {
                     return result
                 }, [])
 
-                var action = actor.student ? scene.agent.act(stepState, availActions) : scene.rivalAgent.act(stepState, availActions)
+                var action = actor.student
+                    ? scene.agent.act(stepState, availActions, scene.forcedEpsilon)
+                    : scene.rivalAgent.act(stepState, availActions)
+
+                scene.forcedEpsilon = Math.max(0, scene.forcedEpsilon - 1)
+
                 var act = actions[action]
 
                 var prev = {
@@ -745,16 +754,17 @@ module.exports = {
                 } else {
                     if (actor.student) {
                         const maxWithoutFood = Math.max(100, scene.maxX * scene.maxY / 3) + actor.tail.length * 2
-                        if (actor.withoutFood > maxWithoutFood) {
+                        if (actor.withoutFood > maxWithoutFood * 10) {
                             teachAgent(-1)
                             restartActor(-1, 'starve')
                             if (instanceProps.test) {
-                                console.log('STARVE')
+                                console.log('STARVE - ', actor.withoutFood)
                             }
                         } else {
                             if (isCycled > 0) {
                                 teachAgent(-1)
-                                restartActor(-1, 'cycle: ' + isCycled)
+                                // restartActor(-1, 'cycle: ' + isCycled)
+                                scene.forcedEpsilon = Math.ceil(Math.random() * 50) + 5
                             } else {
                                 //teachAgent(-0.01)
                                 // const toFood = Math.sqrt(

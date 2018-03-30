@@ -55,7 +55,7 @@ setLevel = level => {
     cmd.level = level
 }
 
-setLevel('empty16x16')
+setLevel('GameFive')
 
 snake.scene.spec = cmd.spec
 snake.scene.params = cmd.params
