@@ -1,8 +1,8 @@
 Arguments: 
-  /usr/local/bin/node /Users/ilyaev/.yarn/bin/yarn.js deploy
+  /usr/local/bin/node /Users/ilyaev/.yarn/bin/yarn.js run deploy
 
 PATH: 
-  /Users/ilyaev/.yarn/bin:/Library/Frameworks/Python.framework/Versions/2.7/bin:/Users/ilyaev/anaconda/bin:/usr/local/git/bin:/sw/bin/:/usr/local/bin:/usr/local/:/usr/local/sbin:/usr/local/mysql/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/ilyaev/.yarn/bin:/Library/Frameworks/Python.framework/Versions/2.7/bin:/Users/ilyaev/anaconda/bin:/usr/local/git/bin:/sw/bin/:/usr/local/:/usr/local/sbin:/usr/local/mysql/bin:/usr/local/bin/:/Applications/Sublime Text.app/Contents/SharedSupport/bin:/usr/local/bin/:/Applications/Sublime Text.app/Contents/SharedSupport/bin
+  /Users/ilyaev/.yarn/bin:/Library/Frameworks/Python.framework/Versions/2.7/bin:/Users/ilyaev/anaconda/bin:/usr/local/git/bin:/sw/bin/:/usr/local/bin:/usr/local/:/usr/local/sbin:/usr/local/mysql/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin/:/Applications/Sublime Text.app/Contents/SharedSupport/bin
 
 Yarn version: 
   1.5.1
